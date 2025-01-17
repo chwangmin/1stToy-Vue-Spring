@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: board
+  data:
+    mongodb:
+      database: board
+      url: mongodb+srv://test:test@localhost:27017/board?retryWrites=true&w=majority

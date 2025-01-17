@@ -1,4 +1,4 @@
-package com.first.board.external.swagger;
+package com.first.board.global.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
