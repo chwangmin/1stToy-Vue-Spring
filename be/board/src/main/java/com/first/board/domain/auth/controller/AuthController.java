@@ -7,6 +7,7 @@ import com.first.board.global.error.exception.AuthenticationException;
 import com.first.board.global.secuirty.dto.JwtTokenDto;
 import com.first.board.global.secuirty.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Tag(name = "auth")
     @Operation(summary="회원 로그인", description = "회원 로그인을 합니다.")
     @PostMapping(path="/login", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
@@ -49,6 +51,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Tag(name = "auth")
     @Operation(summary="토큰 재발급", description = "리프레시 토큰으로 액세스 토큰을 재발급 합니다.")
     @PostMapping(path="/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createAccessToken(HttpServletRequest request, HttpServletResponse response){
@@ -74,6 +77,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Tag(name = "auth")
     @Operation(summary = "로그아웃 API", description = "로그아웃 API")
     @GetMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal String memberId,
@@ -87,5 +91,14 @@ public class AuthController {
         authService.removeRefreshToken(memberId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Tag(name = "test")
+    @Operation(summary = "백만년 토큰 API", description = "테스트용 토큰을 생성한다.")
+    @GetMapping("/testToken")
+    public ResponseEntity<?> testToken() {
+        String testToken = authService.generateTestToken();
+
+        return ResponseEntity.ok(testToken);
     }
 }

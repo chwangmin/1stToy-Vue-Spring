@@ -1,5 +1,6 @@
 package com.first.board.domain.auth.service;
 
+import com.first.board.domain.member.adaptor.MemberAdaptor;
 import com.first.board.domain.member.entity.Member;
 import com.first.board.domain.member.repository.MemberRepository;
 import com.first.board.global.error.ErrorCode;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AuthService {
     private final MemberRepository memberRepository;
+    private final MemberAdaptor memberAdaptor;
     private final JwtTokenProvider jwtTokenProvider;
     private final Encryption encryption;
 
@@ -25,8 +27,7 @@ public class AuthService {
         if (jwtTokenProvider.validateToken(refreshToken)) {
             String memberId = jwtTokenProvider.getInfoMemberId(refreshToken);
 
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new AuthenticationException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
+            Member member = memberAdaptor.findByMemberId(memberId);
 
             return jwtTokenProvider.createAccessToken(member);
         } else {
@@ -37,17 +38,16 @@ public class AuthService {
     @Transactional
     public JwtTokenDto login(String memberId, String password) {
 
-        Member member = memberRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new AuthenticationException(ErrorCode.MEMBER_NOT_MATCH));
+        Member member = memberAdaptor.findByMemberId(memberId);
 
         if (member.getFailCnt() >= 5) {
             throw new AuthenticationException(ErrorCode.MEMBER_COUNT_OUT);
         }
 
         try {
-            String encPassword = encryption.Hashing(password.getBytes(), member.getSalt());
+            String encPassword = encryption.encryptPassword(password, member.getSalt());
 
-            if (!member.getPassword().equals(encPassword)) {
+            if (!member.getEncryptPassword().equals(encPassword)) {
                 throw new AuthenticationException(ErrorCode.MEMBER_NOT_MATCH);
             }
 
@@ -76,8 +76,13 @@ public class AuthService {
 
     @Transactional
     public void removeRefreshToken(String memberId) {
-        Member member = memberRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new AuthenticationException(ErrorCode.MEMBER_NOT_EXISTS));
+        Member member = memberAdaptor.findByMemberId(memberId);
         member.updateRefreshToken(null);
+    }
+
+    public String generateTestToken() {
+        Member member = memberAdaptor.findByMemberId("string");
+
+        return jwtTokenProvider.createAccessToken(member);
     }
 }

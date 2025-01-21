@@ -1,9 +1,11 @@
 package com.first.board.domain.member.entity;
 
+import com.first.board.domain.member.dto.request.MemberModifyRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "member")
@@ -12,7 +14,7 @@ public class Member {
     @Id
     private String id;
 
-    @NonNull
+    @Indexed(unique = true)
     private String memberId;
 
     @NonNull
@@ -25,19 +27,19 @@ public class Member {
     private String email;
 
     @NonNull
-    private String birthDate;
+    private String encryptBirthDate;
 
     @NonNull
-    private String phoneNumber;
+    private String encryptPhoneNumber;
 
     @NonNull
-    private String password;
+    private String encryptPassword;
 
     @NonNull
     private Role role;
 
     @NonNull
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @NonNull
     private short failCnt;
@@ -48,17 +50,17 @@ public class Member {
     private String refreshToken;
 
     @Builder
-    public Member(String id, String memberId, String koName, String enName, String email, String birthDate, String phoneNumber, String password, Role role, Boolean isActive, short failCnt, String salt, String refreshToken) {
+    public Member(String id, String memberId, String koName, String enName, String email, String encryptBirthDate, String encryptPhoneNumber, String encryptPassword, Role role, short failCnt, String salt, String refreshToken) {
         this.id = id;
         this.memberId = memberId;
         this.koName = koName;
         this.enName = enName;
         this.email = email;
-        this.birthDate = birthDate;
-        this.phoneNumber = phoneNumber;
-        this.password = password;
+        this.encryptBirthDate = encryptBirthDate;
+        this.encryptPhoneNumber = encryptPhoneNumber;
+        this.encryptPassword = encryptPassword;
         this.role = role;
-        this.isActive = isActive;
+        this.isActive = true;
         this.failCnt = failCnt;
         this.salt = salt;
         this.refreshToken = refreshToken;
@@ -78,5 +80,13 @@ public class Member {
 
     public void leave() {
         isActive = false;
+    }
+
+    public void modify(MemberModifyRequest memberModifyRequest){
+        this.encryptPassword = memberModifyRequest.getPassword();
+        this.koName = memberModifyRequest.getKoName();
+        this.enName = memberModifyRequest.getEnName();
+        this.email = memberModifyRequest.getEmail();
+        this.encryptPhoneNumber = memberModifyRequest.getPhoneNumber();
     }
 }

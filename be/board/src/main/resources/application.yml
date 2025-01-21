@@ -1,7 +1,14 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
   application:
     name: board
   data:
     mongodb:
       database: board
-      url: mongodb+srv://test:test@localhost:27017/board?retryWrites=true&w=majority
+      uri: mongodb://admin:admin@mongo_container:27017/board?authSource=admin
+server:
+  port: 8021

@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class MemberAdaptor {
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     public Member findByMemberId(String memberId) {
         return memberRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new AuthenticationException(ErrorCode.ALREADY_REGISTERED_MEMBER));
+                .orElseThrow(() -> new AuthenticationException(ErrorCode.MEMBER_NOT_MATCH));
     }
 }

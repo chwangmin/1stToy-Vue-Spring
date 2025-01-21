@@ -33,18 +33,15 @@ public class RegisterRequest {
             message = "올바른 휴대폰 번호 형식이 아닙니다. (예: 01012345678)")
     private String phoneNumber;
 
-    private Role role;
-
     public Member toEntity(String encryptPassword, String encryptBirthDate, String encryptPhoneNumber, String salt) {
         return Member.builder()
                 .memberId(memberId)
-                .password(encryptPassword)
+                .encryptPassword(encryptPassword)
                 .koName(koName)
                 .enName(enName)
                 .email(email)
-                .birthDate(encryptBirthDate)
-                .phoneNumber(encryptPhoneNumber)
-                .role(role)
+                .encryptBirthDate(encryptBirthDate)
+                .encryptPhoneNumber(encryptPhoneNumber)
                 .salt(salt)
                 .build();
     }

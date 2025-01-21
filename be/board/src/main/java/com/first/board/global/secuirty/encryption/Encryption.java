@@ -1,6 +1,8 @@
 package com.first.board.global.secuirty.encryption;
 
 
+import com.first.board.global.error.ErrorCode;
+import com.first.board.global.error.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,16 +22,16 @@ public class Encryption {
     @Value("{jwt.secretKey:test}")
     private String secretKey;
 
-    public String Hashing(byte[] password, String Salt) throws Exception {
+    public String hashing(byte[] password, String Salt) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
 
         for (int i = 0 ; i < 7120; i++){
-            String temp = Byte_to_String(password) + Salt;
+            String temp = byteToString(password) + Salt;
             md.update(temp.getBytes());
             password = md.digest();
         }
 
-        return Byte_to_String(password);
+        return byteToString(password);
     }
 
     public String getSalt(){
@@ -37,10 +39,10 @@ public class Encryption {
         byte[] temp = new byte[SALT_SIZE];
         rnd.nextBytes(temp);
 
-        return Byte_to_String(temp);
+        return byteToString(temp);
     }
 
-    private String Byte_to_String(byte[] temp){
+    private String byteToString(byte[] temp){
         StringBuilder sb = new StringBuilder();
         for(byte a : temp){
             sb.append(String.format("%02x",a));
@@ -86,5 +88,13 @@ public class Encryption {
         }
 
         return null;
+    }
+
+    public String encryptPassword(String password, String salt){
+        try {
+            return hashing(password.getBytes(), salt);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_AES_KEY);
+        }
     }
 }

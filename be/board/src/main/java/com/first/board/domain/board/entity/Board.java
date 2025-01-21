@@ -22,14 +22,21 @@ public class Board extends BaseTimeEntity {
     @NonNull
     private String authorID;
 
-    private String fileUrl;
+    private String fileName;
+
+    private String filePath;
+
+    @NonNull
+    private Long views;
 
     @Builder
-    public Board(String id, String title, String content, String authorID, String fileUrl) {
+    public Board(String id, String title, String content, String authorID, String fileName, String filePath) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.authorID = authorID;
-        this.fileUrl = fileUrl;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.views = 0L;
     }
 }
