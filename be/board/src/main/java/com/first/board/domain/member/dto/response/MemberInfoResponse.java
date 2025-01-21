@@ -15,7 +15,7 @@ public class MemberInfoResponse {
     private String email;
     private String phoneNumber;
 
-    public static MemberInfoResponse toDto(Member member, String phoneNumber) {
+    public static MemberInfoResponse from(Member member, String phoneNumber) {
         return MemberInfoResponse.builder()
                 .memberId(member.getMemberId())
                 .koName(member.getKoName())

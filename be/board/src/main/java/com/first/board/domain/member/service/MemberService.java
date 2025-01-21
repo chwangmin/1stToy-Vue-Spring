@@ -50,7 +50,7 @@ public class MemberService {
 
         String phoneNumber = encryption.decrypt(member.getEncryptPhoneNumber(), member.getSalt());
 
-        return MemberInfoResponse.toDto(member, phoneNumber);
+        return MemberInfoResponse.from(member, phoneNumber);
     }
 
     @Transactional
