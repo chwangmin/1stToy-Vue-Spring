@@ -1,21 +1,33 @@
 package com.first.board.global.secuirty;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpMethod;
 
 @Getter
 public enum WebSecurityPath {
     REQUIRE_AUTH_PATH(
-            new String[]{"/board", "/board/{boardId}", "/auth/logout", "/member/modify", "/member/leave", "/member/info","/auth/logout" },
-            new HttpMethod[]{HttpMethod.POST, HttpMethod.DELETE, HttpMethod.POST}
+            new SecurityPath("/board", HttpMethod.POST),
+            new SecurityPath("/board/{boardId}", HttpMethod.DELETE),
+            new SecurityPath("/board/{boardId}", HttpMethod.PUT),
+            new SecurityPath("/member/modify", HttpMethod.POST),
+            new SecurityPath("/member/leave", HttpMethod.POST),
+            new SecurityPath("/member/info", HttpMethod.GET),
+            new SecurityPath("/auth/logout", HttpMethod.POST)
     );
 
-    private final String[] paths;
-    private final HttpMethod[] method;
+    private final SecurityPath[] paths;
 
-    WebSecurityPath(String[] paths, HttpMethod[] method) {
+    WebSecurityPath(SecurityPath... paths) {
         this.paths = paths;
-        this.method = method;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class SecurityPath {
+        private String path;
+        private HttpMethod method;
     }
 }
+
 

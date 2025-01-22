@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/member")
@@ -42,7 +39,7 @@ public class MemberController {
 
     @Tag(name = "member")
     @Operation(summary = "계정 정보", description = "계정 정보를 보여줍니다.")
-    @PostMapping(path = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> info(@AuthenticationPrincipal String memberId){
         MemberInfoResponse memberInfoResponse = memberService.info(memberId);
 

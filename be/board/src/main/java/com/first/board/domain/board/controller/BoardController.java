@@ -84,7 +84,7 @@ public class BoardController {
 
     @Tag(name = "board")
     @Operation(summary="조회수 증가", description = "파일을 다운로드 합니다.")
-    @GetMapping(path="/{boardId}/view")
+    @PostMapping(path="/{boardId}/view")
     public ResponseEntity<Void> viewBoard(@PathVariable String boardId) {
         boardService.viewBoard(boardId);
         return ResponseEntity.ok().build();
@@ -100,12 +100,13 @@ public class BoardController {
         return ResponseEntity.ok().build();
     }
 
-    //todo 다운로드 되는 지 확인
     @Tag(name = "board")
     @Operation(summary="파일 다운로드", description = "파일을 다운로드 합니다.")
     @GetMapping(path="/download/{fileName}")
     public ResponseEntity<Resource> fileDownloadBoard(@PathVariable String fileName) throws MalformedURLException {
         Resource resource = boardService.fileDownloadBoard(fileName);
+
+        fileName = fileName.split("_", 2)[1];
         String contentDisposition = "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"";
 
         return ResponseEntity.ok()

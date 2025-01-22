@@ -1,10 +1,8 @@
 package com.first.board.global.secuirty;
 
 import com.first.board.domain.auth.service.AuthService;
-import com.first.board.domain.member.service.MemberService;
 import com.first.board.global.secuirty.filter.JwtAuthenticationFilter;
 import com.first.board.global.secuirty.filter.JwtExceptionFilter;
-import com.first.board.global.secuirty.interceptor.UserActivationInterceptor;
 import com.first.board.global.secuirty.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +14,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -24,12 +21,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class WebSecurityConfiguration implements WebMvcConfigurer {
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberService memberService;
+    private final AuthService authService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatchers((auth) -> auth.requestMatchers(WebSecurityPath.REQUIRE_AUTH_PATH.getPaths()));
+                .securityMatchers((matchers) -> {
+                    for (WebSecurityPath.SecurityPath path : WebSecurityPath.REQUIRE_AUTH_PATH.getPaths()) {
+                        matchers.requestMatchers(path.getMethod(), path.getPath());
+                    }
+                });
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement((session) -> session
@@ -54,12 +55,6 @@ public class WebSecurityConfiguration implements WebMvcConfigurer {
                 "/v3/api-docs/**",
                 "/api-docs/**",
                 "/api-docs");
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserActivationInterceptor(memberService))
-                .addPathPatterns(WebSecurityPath.REQUIRE_AUTH_PATH.getPaths());
     }
 }
 
