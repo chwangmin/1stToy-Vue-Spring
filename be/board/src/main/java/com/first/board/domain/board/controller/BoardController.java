@@ -105,10 +105,11 @@ public class BoardController {
     @Operation(summary="파일 다운로드", description = "파일을 다운로드 합니다.")
     @GetMapping(path="/download/{fileName}")
     public ResponseEntity<Resource> fileDownloadBoard(@PathVariable String fileName) throws MalformedURLException {
-
         Resource resource = boardService.fileDownloadBoard(fileName);
+        String contentDisposition = "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"";
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(resource);
     }
 }

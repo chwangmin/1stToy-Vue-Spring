@@ -79,7 +79,7 @@ public class AuthController {
 
     @Tag(name = "auth")
     @Operation(summary = "로그아웃 API", description = "로그아웃 API")
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal String memberId,
                                          HttpServletResponse response) {
 
