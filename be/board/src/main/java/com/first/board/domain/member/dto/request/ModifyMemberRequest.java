@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MemberModifyRequest {
+public class ModifyMemberRequest {
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$",
             message = "비밀번호는 최소 8자리이면서 영문 대문자, 소문자, 숫자, 특수문자를 모두 포함해야 합니다"

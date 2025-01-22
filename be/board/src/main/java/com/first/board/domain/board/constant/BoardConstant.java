@@ -8,7 +8,7 @@ public final class BoardConstant {
     }
 
     public static final class File {
-        public static final String FILE_PATH = "/src/main/resources/static/files";
+        public static final String FILE_PATH = "/src/main/resources/static/files/";
 
         private File() {}
     }

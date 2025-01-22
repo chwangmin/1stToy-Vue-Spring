@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BoardCreateDto {
+public class CreateBoardRequest {
     private String title;
     private String content;
     private String fileName;

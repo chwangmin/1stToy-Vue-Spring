@@ -1,6 +1,6 @@
 package com.first.board.domain.member.entity;
 
-import com.first.board.domain.member.dto.request.MemberModifyRequest;
+import com.first.board.domain.member.dto.request.ModifyMemberRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -82,11 +82,11 @@ public class Member {
         isActive = false;
     }
 
-    public void modify(MemberModifyRequest memberModifyRequest){
-        this.encryptPassword = memberModifyRequest.getPassword();
-        this.koName = memberModifyRequest.getKoName();
-        this.enName = memberModifyRequest.getEnName();
-        this.email = memberModifyRequest.getEmail();
-        this.encryptPhoneNumber = memberModifyRequest.getPhoneNumber();
+    public void modify(ModifyMemberRequest modifyMemberRequest){
+        this.encryptPassword = modifyMemberRequest.getPassword();
+        this.koName = modifyMemberRequest.getKoName();
+        this.enName = modifyMemberRequest.getEnName();
+        this.email = modifyMemberRequest.getEmail();
+        this.encryptPhoneNumber = modifyMemberRequest.getPhoneNumber();
     }
 }

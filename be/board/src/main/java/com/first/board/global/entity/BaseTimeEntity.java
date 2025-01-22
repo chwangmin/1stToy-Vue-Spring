@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 public abstract class BaseTimeEntity {
     @CreatedDate
-    private LocalDateTime createDate;
+    protected LocalDateTime createDate;
 
     @LastModifiedDate
-    private LocalDateTime modifyDate;
+    protected LocalDateTime modifyDate;
 }

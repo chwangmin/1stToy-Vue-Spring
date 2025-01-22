@@ -1,7 +1,7 @@
 package com.first.board.domain.member.service;
 
 import com.first.board.domain.member.adaptor.MemberAdaptor;
-import com.first.board.domain.member.dto.request.MemberModifyRequest;
+import com.first.board.domain.member.dto.request.ModifyMemberRequest;
 import com.first.board.domain.member.dto.request.RegisterRequest;
 import com.first.board.domain.member.dto.response.MemberInfoResponse;
 import com.first.board.domain.member.entity.Member;
@@ -9,7 +9,6 @@ import com.first.board.domain.member.repository.MemberRepository;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.AuthenticationException;
 import com.first.board.global.secuirty.encryption.Encryption;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,15 +53,15 @@ public class MemberService {
     }
 
     @Transactional
-    public void modify(String memberId, MemberModifyRequest memberModifyRequest) {
+    public void modify(String memberId, ModifyMemberRequest modifyMemberRequest) {
         Member member = memberAdaptor.findByMemberId(memberId);
 
-        String encryptPassword = encryption.encryptPassword(memberModifyRequest.getPassword(), member.getSalt());
-        String encryptPhoneNumber = encryption.encrypt(memberModifyRequest.getPhoneNumber(), member.getSalt());
+        String encryptPassword = encryption.encryptPassword(modifyMemberRequest.getPassword(), member.getSalt());
+        String encryptPhoneNumber = encryption.encrypt(modifyMemberRequest.getPhoneNumber(), member.getSalt());
 
-        memberModifyRequest.setPassword(encryptPassword);
-        memberModifyRequest.setPhoneNumber(encryptPhoneNumber);
+        modifyMemberRequest.setPassword(encryptPassword);
+        modifyMemberRequest.setPhoneNumber(encryptPhoneNumber);
 
-        member.modify(memberModifyRequest);
+        member.modify(modifyMemberRequest);
     }
 }

@@ -1,6 +1,8 @@
 package com.first.board.domain.board.controller;
 
-import com.first.board.domain.board.dto.request.BoardCreateDto;
+import com.first.board.domain.board.dto.request.CreateBoardRequest;
+import com.first.board.domain.board.dto.request.ModifyBoardRequest;
+import com.first.board.domain.board.dto.response.GetBoardResponse;
 import com.first.board.domain.board.dto.response.GetBoardsResponse;
 import com.first.board.domain.board.service.BoardService;
 import com.first.board.domain.board.type.SortType;
@@ -8,13 +10,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 @RestController
 @RequestMapping("/board")
@@ -28,15 +34,13 @@ public class BoardController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createBoard(
             @AuthenticationPrincipal String memberId,
-            @RequestPart("board") BoardCreateDto boardCreateRequest,
+            @RequestPart("board") CreateBoardRequest boardCreateRequest,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) throws IOException {
         boardService.createBoard(memberId, boardCreateRequest, file);
         return ResponseEntity.ok().build();
     }
 
-
-    //todo
     @Tag(name = "board")
     @Operation(summary="게시판 페이징 조회(+ 검색, 정렬)", description = "게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
     @GetMapping
@@ -49,50 +53,62 @@ public class BoardController {
         return ResponseEntity.ok(getBoardsResponse);
     }
 
-    //todo
     @Tag(name = "board")
     @Operation(summary="게시글 상세조회", description = "게시글에 대한 상세 조회를 합니다.")
     @GetMapping(path="/{boardId}")
-    public ResponseEntity<Void> getBoard(@PathVariable String boardId){
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> getBoard(@PathVariable String boardId){
+        GetBoardResponse getBoardResponse = boardService.getBoard(boardId);
+        return ResponseEntity.ok(getBoardResponse);
     }
 
-    //todo
     @Tag(name = "board")
     @Operation(summary="게시글 수정", description = "게시글을 수정합니다.")
-    @PutMapping(path="/{boardId}")
-    public ResponseEntity<Void> modifyBoard(@PathVariable String boardId){
+    @PutMapping(path="/{boardId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> modifyBoard(
+            @AuthenticationPrincipal String memberId,
+            @PathVariable String boardId,
+            @RequestBody ModifyBoardRequest modifyBoardRequest,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        boardService.modifyBoard(memberId, boardId, modifyBoardRequest, file);
         return ResponseEntity.ok().build();
     }
 
-    //todo
     @Tag(name = "board")
     @Operation(summary="게시글 삭제", description = "게시글을 삭제합니다.")
     @DeleteMapping(path="/{boardId}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable String boardId){
-        return ResponseEntity.ok().build();
-    }
-
-    //todo
-    @Tag(name = "board")
-    @Operation(summary="json 파일 게시글 등록", description = "json 파일로 게시글을 등록합니다.")
-    @PostMapping(path="/json")
-    public ResponseEntity<Void> jsonBoard() {
-        return ResponseEntity.ok().build();
-    }
-
-    //todo
-    @Tag(name = "board")
-    @Operation(summary="파일 다운로드", description = "파일을 다운로드 합니다.")
-    @GetMapping(path="/file")
-    public ResponseEntity<Void> fileBoard() {
+    public ResponseEntity<Void> deleteBoard(@AuthenticationPrincipal String memberId, @PathVariable String boardId){
+        boardService.deleteBoard(memberId, boardId);
         return ResponseEntity.ok().build();
     }
 
     @Tag(name = "board")
     @Operation(summary="조회수 증가", description = "파일을 다운로드 합니다.")
     @GetMapping(path="/{boardId}/view")
-    public ResponseEntity<Void> fileBoard(@PathVariable String boardId) {
+    public ResponseEntity<Void> viewBoard(@PathVariable String boardId) {
+        boardService.viewBoard(boardId);
         return ResponseEntity.ok().build();
+    }
+
+    @Tag(name = "board")
+    @Operation(summary="json 파일 게시글 등록", description = "json 파일로 게시글을 등록합니다.")
+    @PostMapping(path="/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> jsonBoard(
+            @RequestPart("file") MultipartFile jsonFile
+    ) {
+        boardService.jsonBoard(jsonFile);
+        return ResponseEntity.ok().build();
+    }
+
+    //todo 다운로드 되는 지 확인
+    @Tag(name = "board")
+    @Operation(summary="파일 다운로드", description = "파일을 다운로드 합니다.")
+    @GetMapping(path="/download/{fileName}")
+    public ResponseEntity<Resource> fileDownloadBoard(@PathVariable String fileName) throws MalformedURLException {
+
+        Resource resource = boardService.fileDownloadBoard(fileName);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"")
+                .body(resource);
     }
 }

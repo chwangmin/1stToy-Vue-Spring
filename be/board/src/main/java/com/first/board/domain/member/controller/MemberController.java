@@ -1,6 +1,6 @@
 package com.first.board.domain.member.controller;
 
-import com.first.board.domain.member.dto.request.MemberModifyRequest;
+import com.first.board.domain.member.dto.request.ModifyMemberRequest;
 import com.first.board.domain.member.dto.request.RegisterRequest;
 import com.first.board.domain.member.dto.response.MemberInfoResponse;
 import com.first.board.domain.member.service.MemberService;
@@ -52,8 +52,8 @@ public class MemberController {
     @Tag(name = "member")
     @Operation(summary = "계정 변경", description = "계정 정보를 변경합니다.")
     @PostMapping(path = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> modify(@AuthenticationPrincipal String memberId, @RequestBody @Valid MemberModifyRequest memberModifyRequest){
-        memberService.modify(memberId, memberModifyRequest);
+    public ResponseEntity<Void> modify(@AuthenticationPrincipal String memberId, @RequestBody @Valid ModifyMemberRequest modifyMemberRequest){
+        memberService.modify(memberId, modifyMemberRequest);
 
         return ResponseEntity.ok().build();
     }
