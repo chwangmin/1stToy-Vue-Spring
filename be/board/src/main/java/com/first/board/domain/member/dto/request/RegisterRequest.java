@@ -2,8 +2,8 @@ package com.first.board.domain.member.dto.request;
 
 import com.first.board.domain.member.entity.Member;
 import com.first.board.domain.member.entity.Role;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

@@ -3,20 +3,22 @@ package com.first.board.global.secuirty.filter;
 import com.first.board.domain.auth.service.AuthService;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.AuthenticationException;
+import com.first.board.global.secuirty.WebSecurityPath;
 import com.first.board.global.secuirty.jwt.JwtTokenProvider;
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,24 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+
+        return Arrays.stream(WebSecurityPath.REQUIRE_AUTH_PATH.getPaths())
+                .noneMatch(securityPath ->
+                        pathMatches(uri, securityPath.getPath()) &&
+                                method.equals(securityPath.getMethod().name())
+                );
+    }
+
+    private boolean pathMatches(String uri, String pattern) {
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+        return pathMatcher.match(pattern, uri);
+    }
+
 
     // Jwt Provier 주입
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, AuthService authService) {
