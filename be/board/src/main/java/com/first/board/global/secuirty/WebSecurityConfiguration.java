@@ -1,6 +1,7 @@
 package com.first.board.global.secuirty;
 
 import com.first.board.domain.auth.service.AuthService;
+import com.first.board.domain.member.service.MemberService;
 import com.first.board.global.secuirty.filter.JwtAuthenticationFilter;
 import com.first.board.global.secuirty.filter.JwtExceptionFilter;
 import com.first.board.global.secuirty.jwt.JwtTokenProvider;
@@ -10,32 +11,36 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
-public class WebSecurityConfiguration {
+@EnableWebSecurity
+public class WebSecurityConfiguration implements WebMvcConfigurer {
     private final JwtTokenProvider jwtTokenProvider;
-    private final AuthService authService;
+    private final MemberService memberService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService) throws Exception {
         http
-                .csrf().disable()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
-                .and()
-                .httpBasic().disable()
-                .formLogin().disable()
-                .logout().disable()
-        ;
-
-        // JWT 필터 추가
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, authService),
-                        BasicAuthenticationFilter.class)
+                .securityMatchers((matchers) -> {
+                    for (WebSecurityPath.SecurityPath path : WebSecurityPath.REQUIRE_AUTH_PATH.getPaths()) {
+                        matchers.requestMatchers(path.getMethod(), path.getPath());
+                    }
+                });
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement((session) -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.NEVER)
+                )
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, authService), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JwtExceptionFilter(), JwtAuthenticationFilter.class);
 
         return http.build();
@@ -43,15 +48,14 @@ public class WebSecurityConfiguration {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .antMatchers(
-                        "/swagger-ui/index.html",
-                        "/v1/users/{id}",
-                        "/swagger-ui/**",
-                        "/swagger-resources/**",
-                        "/v3/api-docs/**",
-                        "/api-docs/**",
-                        "/api-docs"
-                );
+
+        return web -> web.ignoring().requestMatchers(
+                "swagger-ui/index.html", "/v1/users/{id}",
+                "/swagger-ui/**",
+                "/swagger-resources/**",
+                "/v3/api-docs/**",
+                "/api-docs/**",
+                "/api-docs");
     }
 }
+

@@ -1,14 +1,13 @@
 package com.first.board.global.secuirty.filter;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.ErrorResponse;
 import io.jsonwebtoken.JwtException;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;

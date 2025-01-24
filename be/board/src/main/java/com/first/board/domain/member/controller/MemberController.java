@@ -6,12 +6,13 @@ import com.first.board.domain.member.dto.response.MemberInfoResponse;
 import com.first.board.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/member")
@@ -21,7 +22,7 @@ public class MemberController {
 
     @Tag(name = "member")
     @Operation(summary = "회원가입", description = "회원가입을 합니다.")
-    @PostMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest registerRequest){
         memberService.register(registerRequest);
 
