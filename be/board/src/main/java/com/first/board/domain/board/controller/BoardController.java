@@ -67,7 +67,7 @@ public class BoardController {
     public ResponseEntity<Void> modifyBoard(
             @AuthenticationPrincipal String memberId,
             @PathVariable String boardId,
-            @RequestBody ModifyBoardRequest modifyBoardRequest,
+            @RequestPart ModifyBoardRequest modifyBoardRequest,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) throws IOException {
         boardService.modifyBoard(memberId, boardId, modifyBoardRequest, file);

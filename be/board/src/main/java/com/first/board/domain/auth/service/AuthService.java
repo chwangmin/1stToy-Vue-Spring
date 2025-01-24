@@ -2,7 +2,6 @@ package com.first.board.domain.auth.service;
 
 import com.first.board.domain.member.adaptor.MemberAdaptor;
 import com.first.board.domain.member.entity.Member;
-import com.first.board.domain.member.repository.MemberRepository;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.AuthenticationException;
 import com.first.board.global.secuirty.dto.JwtTokenDto;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
-    private final MemberRepository memberRepository;
     private final MemberAdaptor memberAdaptor;
     private final JwtTokenProvider jwtTokenProvider;
     private final Encryption encryption;
@@ -52,7 +50,7 @@ public class AuthService {
             }
 
             String accessToken = jwtTokenProvider.createAccessToken(member);
-            String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+            String refreshToken = jwtTokenProvider.createRefreshToken(member.getIdtoString());
 
             member.initCount();
 

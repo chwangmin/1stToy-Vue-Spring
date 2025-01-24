@@ -1,8 +1,5 @@
 package com.first.board.domain.board.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.ObjectArrayDeserializer;
 import com.first.board.domain.board.entity.Board;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,7 +35,7 @@ public class BoardDto {
 
     public static BoardDto from(Board board) {
         return BoardDto.builder()
-                .id(board.getId())
+                .id(board.getIdtoString())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .authorID(board.getAuthorID())
@@ -52,7 +49,6 @@ public class BoardDto {
 
     public Board toEntity() {
         return Board.builder()
-                .id(this.id)
                 .title(this.title)
                 .content(this.content)
                 .authorID(this.authorID)

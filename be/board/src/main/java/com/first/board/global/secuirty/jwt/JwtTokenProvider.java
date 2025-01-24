@@ -42,7 +42,7 @@ public class JwtTokenProvider {
     public JwtTokenDto createJwtTokenResponse(Member member) {
         return JwtTokenDto.builder()
                 .accessToken(createAccessToken(member))
-                .refreshToken(createRefreshToken(member.getId()))
+                .refreshToken(createRefreshToken(member.getIdtoString()))
                 .build();
     }
 

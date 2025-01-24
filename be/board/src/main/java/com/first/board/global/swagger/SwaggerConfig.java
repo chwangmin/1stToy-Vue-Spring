@@ -15,8 +15,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme.Type;
         info = @Info(
                 title = "Owing api 명세서",
                 description = "### Owing API Reference for Developers\n\n" +
-                        "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6InN0cmluZyIsIm5hbWUiOiJzdHJpbmciLCJpYXQiOjE3Mzc0NDMxNDAsImV4cCI6MTc5NzQ0MzE0MH0." +
-                        "PK0CIHrpDR57j-wGdlIQbT8Lfu1d5S7SFdWkFX6YY0w",
+                        "eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoic3RyaW5nIiwibWVtYmVySWQiOiJzdHJpbmciLCJpYXQiOjE3Mzc2ODYzMTUsImV4cCI6MTc5NzY4NjMxNX0.ux0hA5UZuJMK9U65O7iqPwzHgdGRnc0bTl-NdWPuUN0\n",
                 version = "v1",
                 contact = @Contact(
                         name = "Owing",
