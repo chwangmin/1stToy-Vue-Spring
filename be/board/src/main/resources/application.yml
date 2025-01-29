@@ -9,6 +9,6 @@ spring:
   data:
     mongodb:
       database: board
-      uri: mongodb://admin:admin@mongo_container:27017/board?authSource=admin
+      uri: mongodb://test:test@localhost:27017/board?authSource=admin
 server:
   port: 8021

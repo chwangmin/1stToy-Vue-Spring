@@ -42,6 +42,7 @@ public class MemberService {
     public void leave(String memberId) {
         Member member = memberAdaptor.findByMemberId(memberId);
         member.leave();
+        memberRepository.leave(member);
     }
 
     public MemberInfoResponse info(String memberId) {
@@ -63,5 +64,6 @@ public class MemberService {
         modifyMemberRequest.setPhoneNumber(encryptPhoneNumber);
 
         member.modify(modifyMemberRequest);
+        memberRepository.modify(member);
     }
 }

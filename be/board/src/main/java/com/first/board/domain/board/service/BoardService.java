@@ -19,12 +19,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -36,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,27 +56,16 @@ public class BoardService {
     }
 
     public GetBoardsResponse getBoards(String keyword, int page, SortType sort) {
-        Pageable pageable = PageRequest.of(page, BoardConstant.Page.DEFAULT_SIZE, sort.getSort());
+        List<Board> boards = boardRepository.searchBoards(keyword, page, sort);
 
-        Page<Board> boardPage;
-        if (StringUtils.hasText(keyword)) {
-            boardPage = boardRepository.findByTitleContainingOrContentContaining(
-                    keyword,
-                    keyword,
-                    pageable
-            );
-        } else {
-            boardPage = boardRepository.findAll(pageable);
+        List<BoardDto> boardDtos = new ArrayList<>();
+
+        for (Board board : boards) {
+            boardDtos.add(BoardDto.from(board));
         }
-
-        List<BoardDto> boardDtos = boardPage.getContent().stream()
-                .map(BoardDto::from)
-                .collect(Collectors.toList());
 
         return GetBoardsResponse.builder()
                 .boards(boardDtos)
-                .totalPages(boardPage.getTotalPages())
-                .totalElements(boardPage.getTotalElements())
                 .currentPage(page + 1)
                 .build();
     }
@@ -110,6 +94,7 @@ public class BoardService {
         }
 
         board.modify(modifyBoardRequest);
+        boardRepository.modifyBoard(board);
     }
 
     private String saveFile(MultipartFile file) throws IOException {
@@ -142,6 +127,7 @@ public class BoardService {
     public void viewBoard(String boardId) {
         Board board = boardAdaptor.findByBoardId(boardId);
         board.view();
+        boardRepository.view(board);
     }
 
     @Transactional
