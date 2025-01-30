@@ -10,14 +10,14 @@
           <b-card-body>
             <b-form @submit.prevent="handleLogin">
               <b-form-group
-                label="이메일"
-                label-for="email"
+                label="아이디"
+                label-for="username"
               >
                 <b-form-input
-                  id="email"
-                  v-model="email"
-                  type="email"
-                  placeholder="이메일을 입력하세요"
+                  id="username"
+                  v-model="username"
+                  type="text"
+                  placeholder="아이디를 입력하세요"
                   required
                 ></b-form-input>
               </b-form-group>
@@ -63,7 +63,7 @@ export default {
   name: 'LoginView',
   data() {
     return {
-      email: '',
+      username: '',
       password: ''
     }
   },
@@ -71,7 +71,7 @@ export default {
     async handleLogin() {
       try {
         await this.$store.dispatch('login', {
-          email: this.email,
+          username: this.username,
           password: this.password
         })
         
