@@ -64,7 +64,7 @@ public class BoardService {
             boardDtos.add(BoardDto.from(board));
         }
 
-        long maxBoardNum = boardRepository.findMaxNum(keyword) / 20 + 1;
+        long maxBoardNum = boardRepository.findMaxNum(keyword) / 10 + 1;
 
         return GetBoardsResponse.builder()
                 .boards(boardDtos)
