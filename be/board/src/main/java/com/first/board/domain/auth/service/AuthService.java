@@ -50,7 +50,7 @@ public class AuthService {
             }
 
             String accessToken = jwtTokenProvider.createAccessToken(member);
-            String refreshToken = jwtTokenProvider.createRefreshToken(member.getIdtoString());
+            String refreshToken = jwtTokenProvider.createRefreshToken(member.getMemberId());
 
             member.initCount();
 
