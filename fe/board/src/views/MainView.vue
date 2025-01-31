@@ -22,7 +22,7 @@
             </template>
             
             <!-- 작성일 포맷팅을 위한 커스텀 필드 -->
-            <template #cell(createdAt)="data">
+            <template #cell(createdDate)="data">
               {{ formatDate(data.value) }}
             </template>
           </b-table>
@@ -81,21 +81,21 @@ export default {
     return {
       isLoading: false,
       fields: [
-        { key: 'id', label: '번호', sortable: true },
         { key: 'title', label: '제목', sortable: true },
-        { key: 'author', label: '작성자', sortable: true },
-        { key: 'createdAt', label: '작성일', sortable: true },
+        { key: 'authorID', label: '작성자', sortable: true },
+        { key: 'createdDate', label: '작성일', sortable: true },
         { key: 'views', label: '조회수', sortable: true }
       ],
       posts: [],
       showModal: false,
       selectedPost: {
         title: '',
-        author: '',
-        createdAt: '',
+        authorID: '',
+        createdDate: '',
         content: '',
         views: 0,
-        files: []
+        fileName: '',
+        filePath: ''
       }
     }
   },
@@ -107,10 +107,11 @@ export default {
       const date = new Date(dateString)
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
     },
-    fetchPosts() {
+    async fetchPosts() {
       this.isLoading = true
       try {
-        this.posts = boardAPI.getPosts()
+        const response = await boardAPI.getPosts()
+        this.posts = response
       } catch (error) {
         console.error('게시글 불러오기 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
@@ -149,11 +150,12 @@ export default {
     onModalHidden() {
       this.selectedPost = {
         title: '',
-        author: '',
-        createdAt: '',
+        authorID: '',
+        createdDate: '',
         content: '',
         views: 0,
-        files: []
+        fileName: '',
+        filePath: ''
       }
     },
     async editPost(post) {
@@ -201,7 +203,7 @@ export default {
             const isValidData = jsonData.every(item => 
               item.title && 
               item.content && 
-              item.author
+              item.authorID
             )
 
             if (!isValidData) {

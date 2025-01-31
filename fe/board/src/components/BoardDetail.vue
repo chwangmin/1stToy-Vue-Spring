@@ -11,10 +11,10 @@
       <div class="post-header mb-3">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <strong>작성자:</strong> {{ post.author }}
+            <strong>작성자:</strong> {{ post.authorID }}
           </div>
           <div>
-            <strong>작성일:</strong> {{ formatDate(post.createdAt) }}
+            <strong>작성일:</strong> {{ formatDate(post.createdDate) }}
           </div>
         </div>
         <div class="mt-2">
@@ -156,6 +156,7 @@ export default {
       editedPost: {
         title: '',
         content: '',
+        authorID: '',
         newFiles: [],
         removedFileIds: []
       }
@@ -173,6 +174,7 @@ export default {
   },
   methods: {
     formatDate(dateString) {
+      if (!dateString) return ''
       const date = new Date(dateString)
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
     },
@@ -190,6 +192,7 @@ export default {
       this.editedPost = {
         title: this.post.title,
         content: this.post.content,
+        authorID: this.post.authorID,
         newFiles: [],
         removedFileIds: []
       }
@@ -200,6 +203,7 @@ export default {
       this.editedPost = {
         title: '',
         content: '',
+        authorID: '',
         newFiles: [],
         removedFileIds: []
       }
@@ -212,6 +216,7 @@ export default {
         const formData = new FormData()
         formData.append('title', this.editedPost.title)
         formData.append('content', this.editedPost.content)
+        formData.append('authorID', this.editedPost.authorID)
         formData.append('removedFileIds', JSON.stringify(this.editedPost.removedFileIds))
         
         // 새로운 파일들 추가

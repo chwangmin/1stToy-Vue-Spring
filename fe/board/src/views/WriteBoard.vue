@@ -146,13 +146,23 @@ export default {
     async handleSubmit() {
       try {
         const formData = new FormData()
-        formData.append('title', this.form.title)
-        formData.append('content', this.form.content)
         
-        if (this.form.files) {
-          Array.from(this.form.files).forEach(file => {
-            formData.append('files', file)
-          })
+        // board 객체 생성 (수정/생성 공통 사용)
+        const boardData = {
+          title: this.form.title,
+          content: this.form.content,
+          fileName: this.form.files && this.form.files.length > 0 ? this.form.files[0].name : '',
+          filePath: ''
+        }
+
+        // FormData에 board 객체를 JSON 문자열로 변환하여 추가
+        formData.append('board', new Blob([JSON.stringify(boardData)], {
+          type: 'application/json'
+        }))
+
+        // 파일이 있는 경우 추가
+        if (this.form.files && this.form.files.length > 0) {
+          formData.append('file', this.form.files[0])
         }
 
         if (this.isEdit) {
@@ -161,6 +171,12 @@ export default {
           await boardAPI.createPost(formData)
         }
 
+        this.$bvToast.toast('게시글이 저장되었습니다.', {
+          title: '성공',
+          variant: 'success',
+          solid: true
+        })
+        
         this.$router.push('/')
       } catch (error) {
         console.error('게시글 저장 실패:', error)

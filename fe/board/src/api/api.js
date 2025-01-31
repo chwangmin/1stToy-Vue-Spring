@@ -66,9 +66,12 @@ const dummyPosts = [
 
 // API 함수들
 export const authAPI = {
-  login(credentials) {
-    return axios.post('/auth/login', credentials)
+  async login(credentials) {
+    // 헤더 설정 제거 - interceptor에서 처리
+    const response = await axios.post('/auth/login', credentials)
+    return response
   },
+  
   signup(userData) {
     return axios.post('/auth/signup', userData)
   }
@@ -76,24 +79,20 @@ export const authAPI = {
 
 export const boardAPI = {
   // 게시글 목록 조회
-  getPosts() {
-    // return axios.get('/posts')
-    return dummyPosts
+  async getPosts() {
+    const response = await axios.get('/board')
+    return response.data.boards
   },
 
   // 게시글 상세 조회
-  getPost(id) {
-    // return axios.get(`/posts/${id}`)
-    const post = dummyPosts.find(p => p.id === id)
-    if (post) {
-      return post
-    }
-    throw new Error('게시글을 찾을 수 없습니다.')
+  async getPost(id) {
+    const response = await axios.get(`/board/${id}`)
+    return response.data
   },
 
   // 게시글 작성
   createPost(formData) {
-    return axios.post('/posts', formData, {
+    return axios.post('/board', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -102,7 +101,7 @@ export const boardAPI = {
 
   // 게시글 수정
   updatePost(id, formData) {
-    return axios.put(`/posts/${id}`, formData, {
+    return axios.put(`/board/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -111,31 +110,15 @@ export const boardAPI = {
 
   // 게시글 삭제
   deletePost(id) {
-    // return axios.delete(`/posts/${id}`)
-    const index = dummyPosts.findIndex(p => p.id === id)
-    if (index !== -1) {
-      dummyPosts.splice(index, 1)
-      return true
-    }
-    throw new Error('게시글을 찾을 수 없습니다.')
+    return axios.delete(`/board/${id}`)
   },
 
   // 게시글 데이터 일괄 업로드
   async importPosts(jsonData) {
-    // return axios.post('/posts/import', jsonData)
-    
-    // 더미 데이터용 구현
-    const newPosts = jsonData.map((post, index) => ({
-      id: dummyPosts.length + index + 1,
-      title: post.title,
-      content: post.content,
-      author: post.author,
-      createdAt: new Date().toISOString(),
-      views: 0,
-      files: []
-    }))
-
-    dummyPosts.push(...newPosts)
-    return true
+    return axios.post('/board/import', jsonData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
   }
 }
