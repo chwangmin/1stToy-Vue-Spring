@@ -1,28 +1,30 @@
 <template>
   <div id="app">
-    <ToolBar />
-    <ListItem />
+    <tool-bar></tool-bar>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
+import router from './routes/routes'
 import ToolBar from './components/ToolBar.vue'
-import ListItem from './components/ListItem.vue'
 
 export default {
-  name: 'app',
+  name: 'App',
   components: {
-    ToolBar,
-    ListItem
-  }
+    ToolBar
+  },
+  router
 }
 </script>
 
 <style>
+body {
+  margin: 0;
+  padding: 0;
+}
+
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  font-family: Arial, sans-serif;
 }
 </style>
