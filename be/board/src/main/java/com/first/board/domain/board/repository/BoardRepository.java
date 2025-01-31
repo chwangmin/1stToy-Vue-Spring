@@ -120,4 +120,18 @@ public class BoardRepository {
                 return Sorts.descending("createDate"); // 기본 정렬
         }
     }
+
+    public long findMaxNum(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getCollection().countDocuments();
+        }
+
+        String sanitizedText = Pattern.quote(keyword.trim());
+        Bson searchQuery = Filters.or(
+                Filters.regex("title", sanitizedText, "i"),
+                Filters.regex("content", sanitizedText, "i")
+        );
+        return getCollection().countDocuments(searchQuery);
+    }
+
 }

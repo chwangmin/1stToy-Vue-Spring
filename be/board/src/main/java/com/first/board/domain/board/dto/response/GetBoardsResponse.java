@@ -13,4 +13,5 @@ import java.util.List;
 public class GetBoardsResponse {
     List<BoardDto> boards;
     int currentPage;
+    long maxBoardNum;
 }
