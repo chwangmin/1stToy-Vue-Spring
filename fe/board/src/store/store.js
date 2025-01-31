@@ -22,6 +22,14 @@ export default new Vuex.Store({
     logout(state) {
       state.accessToken = null
       state.user = null
+    },
+    updateUserName(state, koName) {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          name: koName
+        }
+      }
     }
   },
   actions: {
@@ -60,6 +68,9 @@ export default new Vuex.Store({
       } finally {
         commit('logout')
       }
+    },
+    updateUserInfo({ commit }, koName) {
+      commit('updateUserName', koName)
     }
   },
   getters: {
