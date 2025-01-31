@@ -17,8 +17,13 @@
             <strong>작성일:</strong> {{ formatDate(post.createdDate) }}
           </div>
         </div>
-        <div class="mt-2">
-          <strong>조회수:</strong> {{ post.views }}
+        <div class="mt-2 d-flex justify-content-between">
+          <div>
+            <strong>조회수:</strong> {{ post.views }}
+          </div>
+          <div>
+            <strong>수정일:</strong> {{ formatDate(post.modifiedDate) }}
+          </div>
         </div>
       </div>
 
@@ -42,34 +47,18 @@
         </b-form-group>
 
         <!-- 파일 업로드 -->
-        <b-form-group label="파일 첨부" class="mt-3">
+        <b-form-group v-if="post.fileName" label="현재 파일" class="mt-3">
+          <div>{{ post.fileName }}</div>
+        </b-form-group>
+
+        <b-form-group label="새 파일 첨부" class="mt-3">
           <b-form-file
-            v-model="editedPost.newFiles"
-            multiple
+            v-model="editedPost.newFile"
             placeholder="파일을 선택하거나 드래그하세요"
             drop-placeholder="파일을 여기에 놓으세요"
             browse-text="파일 선택"
-            class="mb-2"
           ></b-form-file>
         </b-form-group>
-
-        <!-- 기존 파일 목록 -->
-        <div v-if="post.files && post.files.length > 0" class="mt-3">
-          <h6>기존 파일:</h6>
-          <ul class="list-unstyled">
-            <li v-for="file in post.files" :key="file.id" class="d-flex align-items-center mb-2">
-              <span>{{ file.name }}</span>
-              <b-button 
-                size="sm" 
-                variant="danger" 
-                class="ml-2"
-                @click="removeFile(file.id)"
-              >
-                삭제
-              </b-button>
-            </li>
-          </ul>
-        </div>
       </div>
 
       <!-- 게시글 내용 (조회 모드) -->
@@ -81,15 +70,11 @@
         </div>
 
         <!-- 첨부 파일 -->
-        <div v-if="post.files && post.files.length > 0" class="post-files mb-4">
+        <div v-if="post.fileName" class="post-files mb-4">
           <h6>첨부 파일:</h6>
-          <ul class="list-unstyled">
-            <li v-for="file in post.files" :key="file.id">
-              <b-link @click="downloadFile(file)">
-                <i class="fas fa-download"></i> {{ file.name }}
-              </b-link>
-            </li>
-          </ul>
+          <b-link @click="downloadFile({name: post.fileName, path: post.filePath})">
+            <i class="fas fa-download"></i> {{ post.fileName }}
+          </b-link>
         </div>
       </div>
 
@@ -157,8 +142,7 @@ export default {
         title: '',
         content: '',
         authorID: '',
-        newFiles: [],
-        removedFileIds: []
+        newFile: null
       }
     }
   },
@@ -193,8 +177,7 @@ export default {
         title: this.post.title,
         content: this.post.content,
         authorID: this.post.authorID,
-        newFiles: [],
-        removedFileIds: []
+        newFile: null
       }
       this.isEditing = true
     },
@@ -204,29 +187,23 @@ export default {
         title: '',
         content: '',
         authorID: '',
-        newFiles: [],
-        removedFileIds: []
+        newFile: null
       }
-    },
-    removeFile(fileId) {
-      this.editedPost.removedFileIds.push(fileId)
     },
     async saveEdit() {
       try {
-        const formData = new FormData()
-        formData.append('title', this.editedPost.title)
-        formData.append('content', this.editedPost.content)
-        formData.append('authorID', this.editedPost.authorID)
-        formData.append('removedFileIds', JSON.stringify(this.editedPost.removedFileIds))
-        
-        // 새로운 파일들 추가
-        if (this.editedPost.newFiles) {
-          Array.from(this.editedPost.newFiles).forEach(file => {
-            formData.append('files', file)
-          })
+        const boardData = {
+          title: this.editedPost.title,
+          content: this.editedPost.content,
+          authorID: this.editedPost.authorID
         }
 
-        await this.$emit('save-edit', { id: this.post.id, formData })
+        await this.$emit('save-edit', {
+          id: this.post.id,
+          boardData: boardData,
+          file: this.editedPost.newFile
+        })
+        
         this.isEditing = false
         this.closeModal()
       } catch (error) {

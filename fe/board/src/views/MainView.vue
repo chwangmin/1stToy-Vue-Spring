@@ -89,13 +89,15 @@ export default {
       posts: [],
       showModal: false,
       selectedPost: {
+        id: '',
         title: '',
-        authorID: '',
-        createdDate: '',
         content: '',
-        views: 0,
+        authorID: '',
         fileName: '',
-        filePath: ''
+        filePath: '',
+        views: 0,
+        createdDate: '',
+        modifiedDate: ''
       }
     }
   },
@@ -108,7 +110,6 @@ export default {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
     },
     async fetchPosts() {
-      this.isLoading = true
       try {
         const response = await boardAPI.getPosts()
         this.posts = response
@@ -119,19 +120,25 @@ export default {
           variant: 'danger',
           solid: true
         })
-      } finally {
-        this.isLoading = false
       }
     },
     async viewPost(post) {
       try {
-        // 실제 API 연동 시에는 이 부분을 사용
-        // const detailPost = await boardAPI.getPost(post.id)
-        // this.selectedPost = detailPost
-
-        // 임시로 더미 데이터 사용
-        this.selectedPost = post
+        // 모달을 먼저 열어서 깜박거림 방지
+        this.selectedPost = { ...post }
         this.showModal = true
+        
+        // 1. 먼저 조회수 증가 요청
+        await boardAPI.increaseViews(post.id)
+        
+        // 2. 전체 게시글 목록을 다시 불러옴
+        await this.fetchPosts()
+        
+        // 3. 게시글 상세 정보 조회
+        const detailResponse = await boardAPI.getPost(post.id)
+        
+        // 4. 상세 정보 업데이트
+        this.selectedPost = detailResponse.boardDto
       } catch (error) {
         console.error('게시글 조회 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
@@ -149,13 +156,15 @@ export default {
     },
     onModalHidden() {
       this.selectedPost = {
+        id: '',
         title: '',
-        authorID: '',
-        createdDate: '',
         content: '',
-        views: 0,
+        authorID: '',
         fileName: '',
-        filePath: ''
+        filePath: '',
+        views: 0,
+        createdDate: '',
+        modifiedDate: ''
       }
     },
     async editPost(post) {
@@ -167,12 +176,14 @@ export default {
     async deletePost(postId) {
       try {
         await boardAPI.deletePost(postId)
+        // 목록에서 해당 게시글 제거
+        this.posts = this.posts.filter(p => p.id !== postId)
+        
         this.$bvToast.toast('게시글이 삭제되었습니다.', {
           title: '성공',
           variant: 'success',
           solid: true
         })
-        this.fetchPosts() // 목록 새로고침
       } catch (error) {
         console.error('게시글 삭제 실패:', error)
         this.$bvToast.toast('게시글 삭제에 실패했습니다.', {
@@ -188,73 +199,52 @@ export default {
 
       try {
         this.isLoading = true
-        const reader = new FileReader()
         
-        reader.onload = async (e) => {
-          try {
-            const jsonData = JSON.parse(e.target.result)
-            
-            // 데이터 형식 검증
-            if (!Array.isArray(jsonData)) {
-              throw new Error('올바른 데이터 형식이 아닙니다.')
-            }
-
-            // 각 항목의 필수 필드 검증
-            const isValidData = jsonData.every(item => 
-              item.title && 
-              item.content && 
-              item.authorID
-            )
-
-            if (!isValidData) {
-              throw new Error('필수 필드가 누락된 데이터가 있습니다.')
-            }
-
-            // 서버로 데이터 전송
-            await boardAPI.importPosts(jsonData)
-            
-            // 성공 메시지 표시
-            this.$bvToast.toast('데이터가 성공적으로 업로드되었습니다.', {
-              title: '성공',
-              variant: 'success',
-              solid: true
-            })
-
-            // 게시글 목록 새로고침
-            this.fetchPosts()
-          } catch (error) {
-            console.error('JSON 파싱 실패:', error)
-            this.$bvToast.toast('올바른 JSON 형식이 아닙니다.', {
-              title: '에러',
-              variant: 'danger',
-              solid: true
-            })
-          }
+        // JSON 파일 확장자 검증
+        if (!file.name.toLowerCase().endsWith('.json')) {
+          throw new Error('JSON 파일만 업로드 가능합니다.')
         }
 
-        reader.readAsText(file)
-      } catch (error) {
-        console.error('파일 업로드 실패:', error)
-        this.$bvToast.toast('파일 업로드에 실패했습니다.', {
-          title: '에러',
-          variant: 'danger',
+        // 파일 업로드 API 호출
+        await boardAPI.importPosts(file)
+        
+        // 성공 메시지 표시
+        this.$bvToast.toast('데이터가 성공적으로 업로드되었습니다.', {
+          title: '성공',
+          variant: 'success',
           solid: true
         })
+
+        // 게시글 목록 새로고침
+        await this.fetchPosts()
+      } catch (error) {
+        console.error('파일 업로드 실패:', error)
+        this.$bvToast.toast(
+          error.message || '파일 업로드에 실패했습니다.', 
+          {
+            title: '에러',
+            variant: 'danger',
+            solid: true
+          }
+        )
       } finally {
         this.isLoading = false
-        // 파일 입력 초기화
-        event.target.value = ''
+        event.target.value = '' // 파일 입력 초기화
       }
     },
-    async saveEdit({ id, formData }) {
+    async saveEdit({ id, boardData, file }) {
       try {
-        await boardAPI.updatePost(id, formData)
+        // 게시글 수정 API 호출
+        await boardAPI.updatePost(id, boardData, file)
+        
+        // 수정 성공 후 전체 게시글 목록을 다시 불러옴
+        await this.fetchPosts()
+        
         this.$bvToast.toast('게시글이 수정되었습니다.', {
           title: '성공',
           variant: 'success',
           solid: true
         })
-        this.fetchPosts() // 목록 새로고침
       } catch (error) {
         console.error('게시글 수정 실패:', error)
         this.$bvToast.toast('게시글 수정에 실패했습니다.', {

@@ -147,18 +147,31 @@ export default {
       try {
         const formData = new FormData()
         
-        // board 객체 생성 (수정/생성 공통 사용)
-        const boardData = {
-          title: this.form.title,
-          content: this.form.content,
-          fileName: this.form.files && this.form.files.length > 0 ? this.form.files[0].name : '',
-          filePath: ''
-        }
+        if (this.isEdit) {
+          // 수정 요청일 경우 modifyBoardRequest 객체 사용
+          const modifyBoardRequest = {
+            title: this.form.title,
+            content: this.form.content,
+            fileName: this.form.files && this.form.files.length > 0 ? this.form.files[0].name : '',
+            filePath: ''
+          }
 
-        // FormData에 board 객체를 JSON 문자열로 변환하여 추가
-        formData.append('board', new Blob([JSON.stringify(boardData)], {
-          type: 'application/json'
-        }))
+          formData.append('modifyBoardRequest', new Blob([JSON.stringify(modifyBoardRequest)], {
+            type: 'application/json'
+          }))
+        } else {
+          // 새 글 작성일 경우 board 객체 사용
+          const boardData = {
+            title: this.form.title,
+            content: this.form.content,
+            fileName: this.form.files && this.form.files.length > 0 ? this.form.files[0].name : '',
+            filePath: ''
+          }
+
+          formData.append('board', new Blob([JSON.stringify(boardData)], {
+            type: 'application/json'
+          }))
+        }
 
         // 파일이 있는 경우 추가
         if (this.form.files && this.form.files.length > 0) {

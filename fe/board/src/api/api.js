@@ -86,8 +86,12 @@ export const boardAPI = {
 
   // 게시글 상세 조회
   async getPost(id) {
-    const response = await axios.get(`/board/${id}`)
-    return response.data
+    try {
+      const response = await axios.get(`/board/${id}`)
+      return response.data
+    } catch (error) {
+      throw error
+    }
   },
 
   // 게시글 작성
@@ -100,7 +104,27 @@ export const boardAPI = {
   },
 
   // 게시글 수정
-  updatePost(id, formData) {
+  async updatePost(id, { title, content, authorID }, file) {
+    const formData = new FormData()
+    
+    // modifyBoardRequest를 JSON 문자열로 변환하여 추가
+    const modifyBoardRequest = {
+      title,
+      content,
+      authorID
+    }
+    
+    formData.append('modifyBoardRequest', 
+      new Blob([JSON.stringify(modifyBoardRequest)], {
+        type: 'application/json'
+      })
+    )
+    
+    // 파일이 있는 경우에만 추가
+    if (file) {
+      formData.append('file', file)
+    }
+    
     return axios.put(`/board/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -113,12 +137,25 @@ export const boardAPI = {
     return axios.delete(`/board/${id}`)
   },
 
-  // 게시글 데이터 일괄 업로드
-  async importPosts(jsonData) {
-    return axios.post('/board/import', jsonData, {
+  // JSON 파일 업로드를 통한 게시글 등록
+  async importPosts(jsonFile) {
+    const formData = new FormData()
+    formData.append('file', jsonFile)
+    
+    return axios.post('/board/json', formData, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'multipart/form-data'
       }
     })
+  },
+
+  // 조회수 증가
+  async increaseViews(id) {
+    try {
+      const response = await axios.post(`/board/${id}/view`)
+      return response.data
+    } catch (error) {
+      throw error
+    }
   }
 }
