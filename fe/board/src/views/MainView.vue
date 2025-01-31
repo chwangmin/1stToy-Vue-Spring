@@ -1,5 +1,21 @@
 <template>
   <b-container class="mt-4">
+    <!-- 검색 기능 추가 -->
+    <b-row class="mb-3">
+      <b-col sm="12" md="6" lg="4">
+        <b-input-group>
+          <b-form-input
+            v-model="searchKeyword"
+            placeholder="검색어를 입력하세요"
+            @keyup.enter="search"
+          ></b-form-input>
+          <b-input-group-append>
+            <b-button variant="outline-secondary" @click="search">검색</b-button>
+          </b-input-group-append>
+        </b-input-group>
+      </b-col>
+    </b-row>
+
     <b-row>
       <b-col>
         <b-card no-body>
@@ -98,7 +114,8 @@ export default {
         views: 0,
         createdDate: '',
         modifiedDate: ''
-      }
+      },
+      searchKeyword: '' // 검색어 상태 추가
     }
   },
   created() {
@@ -111,8 +128,11 @@ export default {
     },
     async fetchPosts() {
       try {
-        const response = await boardAPI.getPosts()
-        this.posts = response
+        this.isLoading = true
+        const response = await boardAPI.getPosts({
+          keyword: this.searchKeyword
+        })
+        this.posts = response // API에서 받은 boards 배열을 posts에 할당
       } catch (error) {
         console.error('게시글 불러오기 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
@@ -120,6 +140,8 @@ export default {
           variant: 'danger',
           solid: true
         })
+      } finally {
+        this.isLoading = false
       }
     },
     async viewPost(post) {
@@ -254,6 +276,26 @@ export default {
           variant: 'danger',
           solid: true
         })
+      }
+    },
+    // 검색 메소드 수정
+    async search() {
+      try {
+        this.isLoading = true // 로딩 상태 추가
+        const response = await boardAPI.getPosts({
+          keyword: this.searchKeyword
+        })
+        this.posts = response // 전체 응답을 posts에 할당
+        
+      } catch (error) {
+        console.error('검색 실패:', error)
+        this.$bvToast.toast('검색에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      } finally {
+        this.isLoading = false // 로딩 상태 해제
       }
     }
   }

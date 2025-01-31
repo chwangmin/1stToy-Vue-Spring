@@ -78,10 +78,13 @@ export const authAPI = {
 }
 
 export const boardAPI = {
-  // 게시글 목록 조회
-  async getPosts() {
-    const response = await axios.get('/board')
-    return response.data.boards
+  // 게시글 목록 조회 (검색 포함)
+  getPosts: ({ keyword = '' } = {}) => {
+    const url = keyword 
+      ? `/board?keyword=${encodeURIComponent(keyword)}`
+      : '/board'
+    return axios.get(url)
+      .then(response => response.data.boards)  // boards 배열만 반환
   },
 
   // 게시글 상세 조회
