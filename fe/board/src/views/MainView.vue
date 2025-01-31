@@ -175,9 +175,11 @@ export default {
     },
     async deletePost(postId) {
       try {
+        // 게시글 삭제 API 호출
         await boardAPI.deletePost(postId)
-        // 목록에서 해당 게시글 제거
-        this.posts = this.posts.filter(p => p.id !== postId)
+        
+        // 삭제 성공 후 전체 게시글 목록을 다시 불러옴
+        await this.fetchPosts()
         
         this.$bvToast.toast('게시글이 삭제되었습니다.', {
           title: '성공',
