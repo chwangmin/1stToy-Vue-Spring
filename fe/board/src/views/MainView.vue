@@ -1,6 +1,6 @@
 <template>
   <b-container class="mt-4">
-    <!-- 검색 기능 추가 -->
+    <!-- 검색과 정렬 기능 -->
     <b-row class="mb-3">
       <b-col sm="12" md="6" lg="4">
         <b-input-group>
@@ -13,6 +13,14 @@
             <b-button variant="outline-secondary" @click="search">검색</b-button>
           </b-input-group-append>
         </b-input-group>
+      </b-col>
+      <!-- 정렬 드롭다운 추가 -->
+      <b-col sm="12" md="6" lg="4">
+        <b-form-select
+          v-model="selectedSort"
+          :options="sortOptions"
+          @change="handleSortChange"
+        ></b-form-select>
       </b-col>
     </b-row>
 
@@ -134,7 +142,14 @@ export default {
       },
       searchKeyword: '', // 검색어 상태 추가
       currentPage: 1,  // 항상 1로 시작
-      maxBoardNum: 0
+      maxBoardNum: 0,
+      selectedSort: 'CREATED_DESC',
+      sortOptions: [
+        { value: 'CREATED_DESC', text: '최신순' },
+        { value: 'CREATED_ASC', text: '오래된순' },
+        { value: 'VIEWS_DESC', text: '조회수 높은순' },
+        { value: 'VIEWS_ASC', text: '조회수 낮은순' }
+      ]
     }
   },
   created() {
@@ -150,7 +165,8 @@ export default {
         this.isLoading = true
         const response = await boardAPI.getPosts({
           keyword: this.searchKeyword,
-          page: this.currentPage - 1
+          page: this.currentPage - 1,
+          sort: this.selectedSort
         })
         this.posts = response.boards
         this.currentPage = response.currentPage
@@ -357,17 +373,31 @@ export default {
       } finally {
         this.isLoading = false
       }
+    },
+    // 정렬 변경 핸들러 추가
+    async handleSortChange() {
+      const query = { 
+        ...this.$route.query, 
+        sort: this.selectedSort,
+        page: 1 // 정렬 변경 시 첫 페이지로 이동
+      }
+      this.$router.push({ query }).catch(() => {})
+      await this.fetchPosts()
     }
   },
-  // URL의 페이지 파라미터 감시
+  // URL 파라미터 감시 수정
   watch: {
-    '$route.query.page': {
+    '$route.query': {
       immediate: true,
-      handler(newPage) {
-        if (newPage && newPage !== this.currentPage) {
-          this.currentPage = parseInt(newPage)
-          this.fetchPosts()
+      deep: true,
+      handler(query) {
+        if (query.page) {
+          this.currentPage = parseInt(query.page)
         }
+        if (query.sort) {
+          this.selectedSort = query.sort
+        }
+        this.fetchPosts()
       }
     }
   }
