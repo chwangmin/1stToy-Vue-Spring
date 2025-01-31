@@ -146,21 +146,26 @@ export default {
     },
     async viewPost(post) {
       try {
-        // 모달을 먼저 열어서 깜박거림 방지
+        // 1. 현재 게시글 데이터로 모달 먼저 열기
         this.selectedPost = { ...post }
         this.showModal = true
         
-        // 1. 먼저 조회수 증가 요청
-        await boardAPI.increaseViews(post.id)
+        // 2. 백그라운드에서 조회수 증가와 상세 정보 조회
+        const [_, detailResponse] = await Promise.all([
+          boardAPI.increaseViews(post.id),
+          boardAPI.getPost(post.id)
+        ])
         
-        // 2. 전체 게시글 목록을 다시 불러옴
-        await this.fetchPosts()
-        
-        // 3. 게시글 상세 정보 조회
-        const detailResponse = await boardAPI.getPost(post.id)
-        
-        // 4. 상세 정보 업데이트
-        this.selectedPost = detailResponse.boardDto
+        // 3. 모달이 열려있는 상태에서만 상세 정보 업데이트
+        if (this.showModal) {
+          this.selectedPost = detailResponse.boardDto
+          
+          // 4. posts 배열에서 해당 게시글 찾아서 조회수 업데이트
+          const index = this.posts.findIndex(p => p.id === post.id)
+          if (index !== -1) {
+            this.posts[index].views = detailResponse.boardDto.views
+          }
+        }
       } catch (error) {
         console.error('게시글 조회 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
