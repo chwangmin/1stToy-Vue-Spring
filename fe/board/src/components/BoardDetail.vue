@@ -72,7 +72,7 @@
         <!-- 첨부 파일 -->
         <div v-if="post.fileName" class="post-files mb-4">
           <h6>첨부 파일:</h6>
-          <b-link @click="downloadFile({name: post.fileName, path: post.filePath})">
+          <b-link @click="handleFileDownload">
             <i class="fas fa-download"></i> {{ post.fileName }}
           </b-link>
         </div>
@@ -123,6 +123,8 @@
 </template>
 
 <script>
+import { boardAPI } from '../api/api'
+
 export default {
   name: 'BoardDetail',
   props: {
@@ -161,9 +163,6 @@ export default {
       if (!dateString) return ''
       const date = new Date(dateString)
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-    },
-    downloadFile(file) {
-      this.$emit('download-file', file)
     },
     closeModal() {
       this.showModal = false
@@ -225,6 +224,35 @@ export default {
           this.closeModal()
         }
       })
+    },
+    async handleFileDownload() {
+      try {
+        const response = await boardAPI.downloadFile(this.post.filePath)
+        
+        // Blob 객체 생성
+        const blob = new Blob([response.data])
+        
+        // 다운로드 링크 생성
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = this.post.fileName
+        
+        // 링크 클릭하여 다운로드 시작
+        document.body.appendChild(link)
+        link.click()
+        
+        // cleanup
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(link)
+      } catch (error) {
+        console.error('파일 다운로드 실패:', error)
+        this.$bvToast.toast('파일 다운로드에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
     }
   }
 }

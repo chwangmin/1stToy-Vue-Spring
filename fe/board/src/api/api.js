@@ -162,5 +162,12 @@ export const boardAPI = {
     } catch (error) {
       throw error
     }
-  }
+  },
+
+  // 파일 다운로드 메소드 추가
+  downloadFile: (filePath) => {
+    return axios.get(`/board/download/${filePath}`, {
+      responseType: 'blob'  // 파일 다운로드를 위한 responseType 설정
+    })
+  },
 }

@@ -101,7 +101,6 @@
     <board-detail
       :show.sync="showModal"
       :post="selectedPost"
-      @download-file="downloadFile"
       @hidden="onModalHidden"
       @save-edit="saveEdit"
       @delete-post="deletePost"
@@ -212,9 +211,6 @@ export default {
           solid: true
         })
       }
-    },
-    downloadFile(file) {
-      console.log('파일 다운로드:', file.name)
     },
     writePost() {
       this.$router.push('/write')
