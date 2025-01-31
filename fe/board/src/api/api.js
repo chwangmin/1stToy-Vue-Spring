@@ -79,12 +79,12 @@ export const authAPI = {
 
 export const boardAPI = {
   // 게시글 목록 조회 (검색 포함)
-  getPosts: ({ keyword = '' } = {}) => {
+  getPosts: ({ keyword = '', page = 0 } = {}) => {
     const url = keyword 
-      ? `/board?keyword=${encodeURIComponent(keyword)}`
-      : '/board'
+      ? `/board?keyword=${encodeURIComponent(keyword)}&page=${page}`
+      : `/board?page=${page}`
     return axios.get(url)
-      .then(response => response.data.boards)  // boards 배열만 반환
+      .then(response => response.data)
   },
 
   // 게시글 상세 조회

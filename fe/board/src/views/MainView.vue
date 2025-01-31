@@ -44,6 +44,23 @@
           </b-table>
         </b-card>
 
+        <!-- 페이징 정보 표시 수정 -->
+        <div class="mt-3 d-flex justify-content-center">
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="maxBoardNum"
+            :per-page="1"
+            align="center"
+            @change="handlePageChange"
+            class="mb-0"
+            first-text="«"
+            prev-text="‹"
+            next-text="›"
+            last-text="»"
+            pills
+          ></b-pagination>
+        </div>
+
         <!-- 버튼 그룹 -->
         <div class="text-right mt-3 d-flex justify-content-between">
           <!-- 데이터 불러오기 버튼과 파일 입력 -->
@@ -115,7 +132,9 @@ export default {
         createdDate: '',
         modifiedDate: ''
       },
-      searchKeyword: '' // 검색어 상태 추가
+      searchKeyword: '', // 검색어 상태 추가
+      currentPage: 1,  // 항상 1로 시작
+      maxBoardNum: 0
     }
   },
   created() {
@@ -130,9 +149,12 @@ export default {
       try {
         this.isLoading = true
         const response = await boardAPI.getPosts({
-          keyword: this.searchKeyword
+          keyword: this.searchKeyword,
+          page: this.currentPage - 1
         })
-        this.posts = response // API에서 받은 boards 배열을 posts에 할당
+        this.posts = response.boards
+        this.currentPage = response.currentPage
+        this.maxBoardNum = response.maxBoardNum
       } catch (error) {
         console.error('게시글 불러오기 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
@@ -290,8 +312,9 @@ export default {
         const response = await boardAPI.getPosts({
           keyword: this.searchKeyword
         })
-        this.posts = response // 전체 응답을 posts에 할당
-        
+        this.posts = response.boards
+        this.currentPage = response.currentPage
+        this.maxBoardNum = response.maxBoardNum
       } catch (error) {
         console.error('검색 실패:', error)
         this.$bvToast.toast('검색에 실패했습니다.', {
@@ -301,6 +324,50 @@ export default {
         })
       } finally {
         this.isLoading = false // 로딩 상태 해제
+      }
+    },
+    // 페이지 변경 핸들러 수정
+    async handlePageChange(page) {
+      try {
+        this.isLoading = true
+        const response = await boardAPI.getPosts({
+          keyword: this.searchKeyword,
+          page: page - 1
+        })
+        
+        // 데이터 업데이트
+        this.posts = response.boards
+        this.currentPage = page
+        this.maxBoardNum = response.maxBoardNum
+        
+        // URL 업데이트 (새로고침 없이)
+        const query = { ...this.$route.query, page: page }
+        this.$router.push({
+          path: this.$route.path,
+          query: query
+        }).catch(() => {})
+        
+      } catch (error) {
+        console.error('페이지 로딩 실패:', error)
+        this.$bvToast.toast('페이지를 불러오는데 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      } finally {
+        this.isLoading = false
+      }
+    }
+  },
+  // URL의 페이지 파라미터 감시
+  watch: {
+    '$route.query.page': {
+      immediate: true,
+      handler(newPage) {
+        if (newPage && newPage !== this.currentPage) {
+          this.currentPage = parseInt(newPage)
+          this.fetchPosts()
+        }
       }
     }
   }
@@ -317,5 +384,21 @@ export default {
   .table-responsive {
     font-size: 0.9rem;
   }
+}
+
+/* 페이지네이션 스타일 추가 */
+.pagination {
+  margin-bottom: 0;
+}
+
+.page-link {
+  padding: 0.5rem 0.75rem;
+  margin: 0 2px;
+  border-radius: 4px;
+}
+
+.page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
 }
 </style>
