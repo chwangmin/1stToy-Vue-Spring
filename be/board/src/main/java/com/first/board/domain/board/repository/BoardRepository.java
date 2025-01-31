@@ -56,7 +56,7 @@ public class BoardRepository {
     }
 
     public void delete(Board board) {
-        getCollection().deleteOne(Filters.eq("board", board));
+        getCollection().deleteOne(Filters.eq("_id", board.getId()));
     }
 
     public Optional<Board> findById(String boardId) {
