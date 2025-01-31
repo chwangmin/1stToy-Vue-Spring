@@ -44,11 +44,12 @@ public class BoardService {
 
     @Transactional
     public void createBoard(String memberId, CreateBoardRequest boardCreateRequest, MultipartFile file) throws IOException {
-        String fileName = saveFile(file);
+        String UUIDFileName = saveFile(file);
+        String realFileName = file.getOriginalFilename();
 
-        if (fileName != null){
-            boardCreateRequest.setFileName(fileName);
-            boardCreateRequest.setFilePath("/files/" + fileName);
+        if (UUIDFileName != null){
+            boardCreateRequest.setFileName(realFileName);
+            boardCreateRequest.setFilePath(UUIDFileName);
         }
 
         Board board = boardCreateRequest.toEntity(memberId);
@@ -162,7 +163,7 @@ public class BoardService {
         }
     }
 
-    public Resource fileDownloadBoard(String fileName) throws MalformedURLException {
-        return new UrlResource(Paths.get(System.getProperty("user.dir")+ BoardConstant.File.FILE_PATH + fileName).toUri());
+    public Resource fileDownloadBoard(String filePath) throws MalformedURLException {
+        return new UrlResource(Paths.get(System.getProperty("user.dir")+ BoardConstant.File.FILE_PATH + filePath).toUri());
     }
 }
