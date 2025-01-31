@@ -1,14 +1,16 @@
 package com.first.board;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @EnableScheduling
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class BoardApplication {
 
