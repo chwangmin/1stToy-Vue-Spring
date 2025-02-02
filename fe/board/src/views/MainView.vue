@@ -152,7 +152,7 @@ export default {
     }
   },
   created() {
-    this.fetchPosts()
+    
   },
   methods: {
     formatDate(dateString) {

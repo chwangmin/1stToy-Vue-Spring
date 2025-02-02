@@ -1,7 +1,7 @@
 <template>
   <b-navbar toggleable="lg" type="light" class="navigation">
     <b-navbar-brand href="#" @click.prevent="goToMain" class="logo">
-      <img src="../assets/logo.png" alt="로고" class="logo-image">
+      <img src="https://imgs.jobkorea.co.kr/img1/_whitebg/200X80/Co_Logo/Logo/2014/2/2659g009Dz_cG9s4v2x3522z0fgFsOf_6e7agz.jpg?v=202502022206&hash=r&serviceCode=CL" alt="로고" class="logo-image">
     </b-navbar-brand>
 
     <b-navbar-nav class="ml-auto d-flex flex-row align-items-center">
