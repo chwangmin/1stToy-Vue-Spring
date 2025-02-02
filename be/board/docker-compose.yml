@@ -7,7 +7,7 @@ services:
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://root:rootpassword@choi7907-mongodb:27017/board?authSource=admin&authMechanism=SCRAM-SHA-256
     depends_on:
-      - mongodb
+      - choi7907-mongodb
     networks:
       - npm-network
 
