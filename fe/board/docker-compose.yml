@@ -1,5 +1,5 @@
 services:
-  vue-app:
+  choi7907-vue:
     container_name: choi7907-vue
     build: 
       context: .
