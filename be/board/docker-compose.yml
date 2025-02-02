@@ -1,21 +1,21 @@
-version: '3.8'
-
 services:
   app:
+    container_name: choi7907-springboot
     build: .
     ports:
-      - "8021:8021"
+      - "21090:8021"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://test:test@mongodb:27017/board?authSource=admin
+      - SPRING_DATA_MONGODB_URI=mongodb://root:rootpassword@choi7907-mongodb:27017/board?authSource=admin&authMechanism=SCRAM-SHA-256
     depends_on:
       - mongodb
     networks:
-      - app-network
+      - npm-network
 
   mongodb:
+    container_name: choi7907-mongodb
     image: mongo:latest
     ports:
-      - "27017:27017"
+      - "21200:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
@@ -24,11 +24,11 @@ services:
       - mongodb_data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
-      - app-network
+      - npm-network
 
 volumes:
   mongodb_data:
 
 networks:
-  app-network:
-    driver: bridge
+  npm-network:
+    external: true
