@@ -8,9 +8,6 @@ services:
       - "21080:80"
     networks:
       - npm-network
-    environment:
-      - NODE_ENV=production
-    # 이미지 변경시 자동 재빌드 옵션
     restart: unless-stopped
 
 networks:

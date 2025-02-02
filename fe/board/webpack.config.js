@@ -1,6 +1,10 @@
 var path = require('path')
 var webpack = require('webpack')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
+const dotenv = require('dotenv')
+
+// .env 파일 로드
+const env = dotenv.config().parsed
 
 module.exports = {
   entry: './src/main.js',
@@ -29,7 +33,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: /node_modules\/(?!(jwt-decode)\/).*/  // jwt-decode만 포함
       },
       {
         test: /\.(png|jpg|gif|svg)$/,
@@ -59,6 +63,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './index.html',  // Point to your HTML template
       inject: 'body',  // Inject the build.js into the body of the HTML
+    }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        VUE_APP_BACKEND_URL: JSON.stringify(env.VUE_APP_BACKEND_URL),
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+      }
     })
   ]
 }

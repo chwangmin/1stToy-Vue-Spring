@@ -3,7 +3,7 @@ import store from '../store/store'
 
 // axios 인스턴스 생성
 const instance = axios.create({
-  baseURL: 'http://localhost:8021',
+  baseURL: process.env.VUE_APP_BACKEND_URL,
   timeout: 5000,
   withCredentials: true  // 모든 요청에 쿠키 포함
 })
