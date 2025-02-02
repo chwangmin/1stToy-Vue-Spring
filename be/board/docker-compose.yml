@@ -1,5 +1,5 @@
 services:
-  app:
+  choi7907-springboot:
     container_name: choi7907-springboot
     build: .
     ports:
@@ -11,7 +11,7 @@ services:
     networks:
       - npm-network
 
-  mongodb:
+  choi7907-mongodb:
     container_name: choi7907-mongodb
     image: mongo:latest
     ports:
