@@ -167,6 +167,8 @@
 </template>
 
 <script>
+import { authAPI } from '../api/api'
+
 export default {
   name: 'SignUpView',
   data() {
@@ -252,7 +254,7 @@ export default {
       if (!this.isFormValid) return
 
       try {
-        console.log('회원가입 시도:', {
+        const userData = {
           username: this.form.username,
           password: this.form.password,
           koreanName: this.form.koreanName,
@@ -260,12 +262,15 @@ export default {
           email: this.form.email,
           birthdate: this.form.birthdate,
           phone: this.form.phone
-        })
+        }
+
+        await authAPI.signup(userData)
         
-        // 성공 시 로그인 페이지로 이동
+        // 회원가입 성공 시 로그인 페이지로 이동
         this.$router.push('/login')
       } catch (error) {
         console.error('회원가입 실패:', error)
+        // 에러 처리 로직 추가 가능
       }
     }
   }
