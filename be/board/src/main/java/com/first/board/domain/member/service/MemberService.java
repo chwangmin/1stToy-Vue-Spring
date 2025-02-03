@@ -81,11 +81,15 @@ public class MemberService {
         memberRepository.modify(member);
     }
 
-    @Transactional
-    @Async("mailExecutor")
     public void sendPassword(String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new AuthenticationException(ErrorCode.MEMBER_NOT_MATCH));
 
+        sendEmail(email, member);
+    }
+
+    @Transactional
+    @Async("mailExecutor")
+    protected void sendEmail(String email, Member member) {
         String newPassword = sendEmailLogic.makeRandomPassword();
 
         try {
