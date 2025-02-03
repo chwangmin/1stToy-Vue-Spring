@@ -242,10 +242,13 @@ export default {
     },
     phoneState() {
       if (this.form.phoneNumber.length === 0) return null
-      return /^[0-9]{10,11}$/.test(this.form.phoneNumber)
+      return /^0\d{10}$/.test(this.form.phoneNumber)
     },
     phoneFeedback() {
-      return '올바른 전화번호 형식이 아닙니다. (10-11자리 숫자)'
+      if (this.form.phoneNumber.length === 0) return '전화번호를 입력해주세요.'
+      if (!this.form.phoneNumber.startsWith('0')) return '전화번호는 0으로 시작해야 합니다.'
+      if (this.form.phoneNumber.length !== 11) return '전화번호는 정확히 11자리여야 합니다.'
+      return '올바른 전화번호 형식이 아닙니다. (예: 01012345678)'
     },
     isFormValid() {
       return this.memberIdState && 
@@ -266,11 +269,36 @@ export default {
       return yesterday.toISOString().split('T')[0]
     },
     validatePhone() {
-      // 숫자만 입력되도록 필터링
-      this.form.phoneNumber = this.form.phoneNumber.replace(/[^0-9]/g, '')
+      // 숫자만 입력되도록 필터링하고 11자리로 제한
+      let filtered = this.form.phoneNumber.replace(/[^0-9]/g, '')
+      if (filtered.length > 11) {
+        filtered = filtered.slice(0, 11)
+      }
+      this.form.phoneNumber = filtered
+
+      // 11자리가 아닐 때 사용자에게 알림
+      if (filtered.length > 0 && filtered.length !== 11) {
+        this.$bvToast.toast('전화번호는 11자리여야 합니다.', {
+          title: '입력 오류',
+          variant: 'warning',
+          solid: true,
+          autoHideDelay: 3000
+        })
+      }
     },
     async handleSignUp() {
-      if (!this.isFormValid) return
+      if (!this.isFormValid) {
+        // 폼이 유효하지 않을 때 전화번호 오류 체크
+        if (this.form.phoneNumber.length !== 11) {
+          this.$bvToast.toast('전화번호는 11자리여야 합니다. (예: 01012345678)', {
+            title: '입력 오류',
+            variant: 'danger',
+            solid: true,
+            autoHideDelay: 3000
+          })
+        }
+        return
+      }
 
       try {
         const userData = {
@@ -284,12 +312,15 @@ export default {
         }
 
         await authAPI.signup(userData)
-        
-        // 회원가입 성공 시 로그인 페이지로 이동
         this.$router.push('/login')
       } catch (error) {
         console.error('회원가입 실패:', error)
-        // 에러 처리 로직 추가 가능
+        this.$bvToast.toast('회원가입에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true,
+          autoHideDelay: 3000
+        })
       }
     }
   }
