@@ -183,26 +183,16 @@ export default {
     },
     async viewPost(post) {
       try {
-        // 1. 현재 게시글 데이터로 모달 먼저 열기
-        this.selectedPost = { ...post }
+        // 1. 조회수 증가 API 호출
+        await boardAPI.increaseViews(post.id)
+        
+        // 2. 상세 정보 조회
+        const detailResponse = await boardAPI.getPost(post.id)
+        this.selectedPost = detailResponse.boardDto
         this.showModal = true
         
-        // 2. 백그라운드에서 조회수 증가와 상세 정보 조회
-        const [_, detailResponse] = await Promise.all([
-          boardAPI.increaseViews(post.id),
-          boardAPI.getPost(post.id)
-        ])
-        
-        // 3. 모달이 열려있는 상태에서만 상세 정보 업데이트
-        if (this.showModal) {
-          this.selectedPost = detailResponse.boardDto
-          
-          // 4. posts 배열에서 해당 게시글 찾아서 조회수 업데이트
-          const index = this.posts.findIndex(p => p.id === post.id)
-          if (index !== -1) {
-            this.posts[index].views = detailResponse.boardDto.views
-          }
-        }
+        // 3. 전체 게시글 목록을 다시 불러와서 최신 조회수 반영
+        await this.fetchPosts()
       } catch (error) {
         console.error('게시글 조회 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
