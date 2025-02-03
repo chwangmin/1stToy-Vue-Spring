@@ -105,6 +105,12 @@ public class BoardService {
         if (file != null && !file.isEmpty()) {
             String boardPath = System.getProperty("user.dir") + BoardConstant.File.FILE_PATH;
 
+            // 디렉토리 생성 코드 추가
+            File directory = new File(boardPath);
+            if (!directory.exists()) {
+                directory.mkdirs(); // 여러 단계의 디렉토리를 한 번에 생성
+            }
+
             UUID uuid = UUID.randomUUID();
             String fileName = uuid + "_" + file.getOriginalFilename();
             File saveFile = new File(boardPath, fileName);
