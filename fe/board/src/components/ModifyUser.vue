@@ -124,7 +124,6 @@
 
 <script>
 import { mapActions } from 'vuex'
-import axios from '../api/interceptor'
 import { memberAPI } from '../api/api'
 
 export default {

@@ -96,20 +96,23 @@
           </b-button>
         </template>
         <template v-else>
-          <b-button
-            variant="danger"
-            class="mr-2"
-            @click="handleDelete"
-          >
-            삭제
-          </b-button>
-          <b-button
-            variant="primary"
-            class="mr-2"
-            @click="startEdit"
-          >
-            수정
-          </b-button>
+          <!-- 토큰이 있을 때만 수정/삭제 버튼 표시 -->
+          <template v-if="accessToken">
+            <b-button
+              variant="danger"
+              class="mr-2"
+              @click="handleDelete"
+            >
+              삭제
+            </b-button>
+            <b-button
+              variant="primary"
+              class="mr-2"
+              @click="startEdit"
+            >
+              수정
+            </b-button>
+          </template>
           <b-button
             variant="secondary"
             @click="closeModal"
@@ -145,7 +148,9 @@ export default {
         content: '',
         authorID: '',
         newFile: null
-      }
+      },
+      titleState: null,
+      contentState: null
     }
   },
   computed: {
@@ -156,6 +161,9 @@ export default {
       set(value) {
         this.$emit('update:show', value)
       }
+    },
+    accessToken() {
+      return this.$store.state.accessToken
     }
   },
   methods: {
@@ -172,12 +180,22 @@ export default {
       this.$emit('hidden')
     },
     startEdit() {
+      if (!this.accessToken) {
+        this.$bvToast.toast('로그인이 필요한 기능입니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+        return
+      }
       this.editedPost = {
         title: this.post.title,
         content: this.post.content,
         authorID: this.post.authorID,
         newFile: null
       }
+      this.titleState = null
+      this.contentState = null
       this.isEditing = true
     },
     cancelEdit() {
@@ -190,10 +208,32 @@ export default {
       }
     },
     async saveEdit() {
+      // 유효성 검사
+      this.titleState = this.editedPost.title.trim() !== ''
+      this.contentState = this.editedPost.content.trim() !== ''
+
+      if (!this.titleState || !this.contentState) {
+        return
+      }
+
+      // 저장 확인 모달
+      const confirmed = await this.$bvModal.msgBoxConfirm('수정된 내용을 저장하시겠습니까?', {
+        title: '게시글 수정',
+        okVariant: 'primary',
+        okTitle: '저장',
+        cancelTitle: '취소',
+        hideHeaderClose: false,
+        centered: true
+      })
+
+      if (!confirmed) {
+        return
+      }
+
       try {
         const boardData = {
-          title: this.editedPost.title,
-          content: this.editedPost.content,
+          title: this.editedPost.title.trim(),
+          content: this.editedPost.content.trim(),
           authorID: this.editedPost.authorID
         }
 
@@ -207,9 +247,22 @@ export default {
         this.closeModal()
       } catch (error) {
         console.error('수정 실패:', error)
+        this.$bvToast.toast('자신의 게시글만 수정할 수 있습니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
       }
     },
     handleDelete() {
+      if (!this.accessToken) {
+        this.$bvToast.toast('로그인이 필요한 기능입니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+        return
+      }
       this.$bvModal.msgBoxConfirm('정말 삭제하시겠습니까?', {
         title: '게시글 삭제',
         okVariant: 'danger',

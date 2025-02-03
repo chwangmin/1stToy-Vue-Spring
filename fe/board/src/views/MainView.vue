@@ -239,7 +239,7 @@ export default {
         })
       } catch (error) {
         console.error('게시글 삭제 실패:', error)
-        this.$bvToast.toast('게시글 삭제에 실패했습니다.', {
+        this.$bvToast.toast('해당 글을 작성한 작성자가 아닙니다.', {
           title: '에러',
           variant: 'danger',
           solid: true
@@ -300,7 +300,7 @@ export default {
         })
       } catch (error) {
         console.error('게시글 수정 실패:', error)
-        this.$bvToast.toast('게시글 수정에 실패했습니다.', {
+        this.$bvToast.toast('해당 글을 작성한 작성자가 아닙니다.', {
           title: '에러',
           variant: 'danger',
           solid: true
