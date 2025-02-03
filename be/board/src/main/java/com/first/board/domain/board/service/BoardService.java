@@ -45,9 +45,9 @@ public class BoardService {
     @Transactional
     public void createBoard(String memberId, CreateBoardRequest boardCreateRequest, MultipartFile file) throws IOException {
         String UUIDFileName = saveFile(file);
-        String realFileName = file.getOriginalFilename();
 
         if (UUIDFileName != null){
+            String realFileName = file.getOriginalFilename();
             boardCreateRequest.setFileName(realFileName);
             boardCreateRequest.setFilePath(UUIDFileName);
         }
