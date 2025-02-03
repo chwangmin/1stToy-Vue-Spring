@@ -178,8 +178,8 @@ export const memberAPI = {
     return axios.get('/member/info')
   },
 
-  // 회원 정보 수정
-  modifyMemberInfo(memberData) {
-    return axios.post('/member/modify', memberData)
+  // 비밀번호 찾기
+  findPassword(email) {
+    return axios.post('/member/find-pw', { email })
   }
 }

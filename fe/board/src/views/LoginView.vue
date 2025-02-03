@@ -46,25 +46,76 @@
             </b-form>
 
             <div class="text-center mt-3">
-              <p class="mb-0">
+              <p class="mb-2">
                 계정이 없으신가요? 
                 <b-link to="/signup">회원가입</b-link>
+              </p>
+              <p class="mb-0">
+                비밀번호를 잊으셨나요?
+                <b-link href="#" @click.prevent="showFindPasswordModal = true">비밀번호 찾기</b-link>
               </p>
             </div>
           </b-card-body>
         </b-card>
       </b-col>
     </b-row>
+
+    <!-- 비밀번호 찾기 모달 -->
+    <b-modal
+      v-model="showFindPasswordModal"
+      title="비밀번호 찾기"
+      hide-footer
+      centered
+      @hidden="resetModal"
+    >
+      <b-form @submit.prevent="handleFindPassword">
+        <b-form-group
+          label="이메일"
+          label-for="email"
+          description="가입시 등록한 이메일을 입력해주세요"
+        >
+          <b-form-input
+            id="email"
+            v-model="email"
+            type="email"
+            placeholder="이메일을 입력하세요"
+            required
+          ></b-form-input>
+        </b-form-group>
+
+        <div class="text-center mt-3">
+          <b-button
+            type="submit"
+            variant="primary"
+            class="mr-2"
+            :disabled="isLoading"
+          >
+            {{ isLoading ? '처리중...' : '비밀번호 찾기' }}
+          </b-button>
+          <b-button
+            variant="secondary"
+            @click="showFindPasswordModal = false"
+          >
+            취소
+          </b-button>
+        </div>
+      </b-form>
+    </b-modal>
   </b-container>
 </template>
 
 <script>
+import { memberAPI } from '../api/api'
+
 export default {
   name: 'LoginView',
   data() {
     return {
       username: '',
-      password: ''
+      password: '',
+      showFindPasswordModal: false,
+      email: '',
+      isLoading: false
     }
   },
   methods: {
@@ -84,6 +135,36 @@ export default {
           variant: 'danger',
           solid: true
         })
+      }
+    },
+    resetModal() {
+      this.email = ''
+      this.isLoading = false
+    },
+    async handleFindPassword() {
+      if (this.isLoading) return  // 이미 처리 중이면 중복 요청 방지
+      
+      this.isLoading = true
+      try {
+        await memberAPI.findPassword(this.email)
+        this.$bvToast.toast('이메일로 비밀번호 재설정 링크가 전송되었습니다.', {
+          title: '알림',
+          variant: 'success',
+          solid: true
+        })
+        this.showFindPasswordModal = false
+      } catch (error) {
+        let errorMessage = '비밀번호 찾기에 실패했습니다.'
+        if (error.response && error.response.data && error.response.data.errorMessage) {
+          errorMessage = error.response.data.errorMessage
+        }
+        this.$bvToast.toast(errorMessage, {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      } finally {
+        this.isLoading = false
       }
     }
   }
