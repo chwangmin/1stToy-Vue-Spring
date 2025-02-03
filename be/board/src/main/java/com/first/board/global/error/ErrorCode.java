@@ -26,6 +26,7 @@ public enum ErrorCode {
     MEMBER_COUNT_OUT(HttpStatus.BAD_REQUEST, "M-004", "해당 회원 로그인 시도 횟수가 초과되었습니다. 30분 후 다시 시도하세요!"),
     MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "M-005", " 아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다.\n" +
             "입력하신 내용을 다시 확인해주세요."),
+    ALREADY_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, "M-006", "이미 가입된 이메일 입니다."),
 
 
     // 암호화

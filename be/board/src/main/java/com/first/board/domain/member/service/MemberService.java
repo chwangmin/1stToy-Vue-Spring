@@ -28,6 +28,10 @@ public class MemberService {
             throw new AuthenticationException(ErrorCode.ALREADY_REGISTERED_MEMBER);
         }
 
+        if (memberRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new AuthenticationException(ErrorCode.ALREADY_REGISTERED_EMAIL);
+        }
+
         String salt = encryption.getSalt();
 
         String encryptPassword = encryption.encryptPassword(registerRequest.getPassword(), salt);

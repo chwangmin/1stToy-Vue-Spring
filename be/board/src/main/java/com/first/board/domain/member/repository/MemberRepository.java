@@ -67,4 +67,7 @@ public class MemberRepository {
         getCollection().updateOne(filter, updates);
     }
 
+    public boolean existsByEmail(String email) {
+        return getCollection().countDocuments(Filters.eq("email", email)) > 0;
+    }
 }
