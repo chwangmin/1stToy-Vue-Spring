@@ -106,4 +106,8 @@ public class Member{
     public String getIdtoString() {
         return id != null ? id.toHexString() : null;
     }
+
+    public void modifyPassword(String newPassword) {
+        this.encryptPassword = newPassword;
+    }
 }

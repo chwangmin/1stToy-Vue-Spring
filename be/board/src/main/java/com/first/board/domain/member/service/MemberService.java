@@ -8,8 +8,16 @@ import com.first.board.domain.member.entity.Member;
 import com.first.board.domain.member.repository.MemberRepository;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.AuthenticationException;
+import com.first.board.global.error.exception.BusinessException;
+import com.first.board.global.mail.EmailConstraints;
+import com.first.board.global.mail.SendEmailLogic;
 import com.first.board.global.secuirty.encryption.Encryption;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +28,8 @@ public class MemberService {
     private final MemberAdaptor memberAdaptor;
     private final MemberRepository memberRepository;
     private final Encryption encryption;
+    private final SendEmailLogic sendEmailLogic;
+    private final JavaMailSender javaMailSender;
 
     @Transactional
     public void register(RegisterRequest registerRequest) {
@@ -69,5 +79,34 @@ public class MemberService {
 
         member.modify(modifyMemberRequest);
         memberRepository.modify(member);
+    }
+
+    @Transactional
+    @Async("mailExecutor")
+    public void sendPassword(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new AuthenticationException(ErrorCode.MEMBER_NOT_MATCH));
+
+        String newPassword = sendEmailLogic.makeRandomPassword();
+
+        try {
+            String encPassword = encryption.hashing(newPassword.getBytes(),member.getSalt());
+            member.modifyPassword(encPassword);
+            memberRepository.modify(member);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_AES_KEY);
+        }
+
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            mimeMessageHelper.setTo(email); // 메일 수신자
+            mimeMessageHelper.setSubject(EmailConstraints.MAIL_TITLE); // 메일 제목
+            mimeMessageHelper.setText(sendEmailLogic.setContext(newPassword, "password"), true); // 메일 본문 내용, HTML 여부
+            javaMailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new BusinessException(ErrorCode.EMAIL_FAIL);
+        }
     }
 }

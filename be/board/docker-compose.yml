@@ -4,8 +4,8 @@ services:
     build: .
     ports:
       - "21090:8021"
-    environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://root:rootpassword@choi7907-mongodb:27017/board?authSource=admin&authMechanism=SCRAM-SHA-256
+    env_file:
+      - .env
     depends_on:
       - choi7907-mongodb
     networks:

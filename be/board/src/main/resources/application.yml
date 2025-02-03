@@ -10,5 +10,17 @@ spring:
     mongodb:
       database: board
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://root:rootpassword@localhost:21200/board?authSource=admin&authMechanism=SCRAM-SHA-256}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
 server:
   port: 8021

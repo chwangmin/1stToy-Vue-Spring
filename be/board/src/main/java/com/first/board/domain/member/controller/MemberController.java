@@ -1,5 +1,6 @@
 package com.first.board.domain.member.controller;
 
+import com.first.board.domain.member.dto.request.FindPasswordRequest;
 import com.first.board.domain.member.dto.request.ModifyMemberRequest;
 import com.first.board.domain.member.dto.request.RegisterRequest;
 import com.first.board.domain.member.dto.response.MemberInfoResponse;
@@ -7,6 +8,7 @@ import com.first.board.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -54,5 +56,15 @@ public class MemberController {
         memberService.modify(memberId, modifyMemberRequest);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Tag(name = "member")
+    @Operation(summary = "비밀번호 찾기 API", description = "비밀번호 찾기 API")
+    @PostMapping("/findPw")
+    public ResponseEntity<String> findPassword(@RequestBody FindPasswordRequest findPasswordRequest){
+
+        memberService.sendPassword(findPasswordRequest.getEmail());
+
+        return ResponseEntity.status(HttpStatus.OK).body(findPasswordRequest.getEmail());
     }
 }

@@ -70,4 +70,13 @@ public class MemberRepository {
     public boolean existsByEmail(String email) {
         return getCollection().countDocuments(Filters.eq("email", email)) > 0;
     }
+
+    public Optional<Member> findByEmail(String email) {
+        return Optional.ofNullable(
+                getCollection()
+                        .find(Filters.eq("email", email))
+                        .map(document -> document)
+                        .first()
+        );
+    }
 }
