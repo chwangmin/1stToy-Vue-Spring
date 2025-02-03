@@ -27,6 +27,7 @@ public enum ErrorCode {
     MEMBER_NOT_MATCH(HttpStatus.BAD_REQUEST, "M-005", " 아이디(로그인 전용 아이디) 또는 비밀번호를 잘못 입력했습니다.\n" +
             "입력하신 내용을 다시 확인해주세요."),
     ALREADY_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, "M-006", "이미 가입된 이메일 입니다."),
+    EMAIL_NOT_EXISTS(HttpStatus.BAD_REQUEST, "M-007", "해당 이메일은 존재하지 않습니다."),
 
 
     // 암호화
