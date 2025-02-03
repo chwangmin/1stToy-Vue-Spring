@@ -60,7 +60,7 @@ public class MemberController {
 
     @Tag(name = "member")
     @Operation(summary = "비밀번호 찾기 API", description = "비밀번호 찾기 API")
-    @PostMapping("/findPw")
+    @PostMapping("/find-pw")
     public ResponseEntity<String> findPassword(@RequestBody FindPasswordRequest findPasswordRequest){
 
         memberService.sendPassword(findPasswordRequest.getEmail());
