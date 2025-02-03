@@ -133,6 +133,7 @@
                   v-model="form.birthdate"
                   type="date"
                   required
+                  :max="getYesterday()"
                 ></b-form-input>
               </b-form-group>
 
@@ -258,6 +259,12 @@ export default {
     }
   },
   methods: {
+    getYesterday() {
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(today.getDate() - 1)
+      return yesterday.toISOString().split('T')[0]
+    },
     validatePhone() {
       // 숫자만 입력되도록 필터링
       this.form.phoneNumber = this.form.phoneNumber.replace(/[^0-9]/g, '')
