@@ -171,3 +171,15 @@ export const boardAPI = {
     })
   },
 }
+
+export const memberAPI = {
+  // 회원 정보 조회
+  getMemberInfo() {
+    return axios.get('/member/info')
+  },
+
+  // 회원 정보 수정
+  modifyMemberInfo(memberData) {
+    return axios.post('/member/modify', memberData)
+  }
+}

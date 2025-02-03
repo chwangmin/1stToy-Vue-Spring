@@ -125,6 +125,7 @@
 <script>
 import { mapActions } from 'vuex'
 import axios from '../api/interceptor'
+import { memberAPI } from '../api/api'
 
 export default {
   name: 'ModifyUser',
@@ -265,13 +266,15 @@ export default {
       }
 
       try {
-        await axios.post('/member/modify', {
+        const memberData = {
           password: this.form.password,
           koName: this.form.koName,
           enName: this.form.enName,
           email: this.form.email,
           phoneNumber: this.form.phoneNumber
-        })
+        }
+        
+        await memberAPI.modifyMemberInfo(memberData)
         
         await this.updateUserInfo(this.form.koName)
         this.$emit('update-success', this.form.koName)
