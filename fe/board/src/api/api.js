@@ -73,7 +73,7 @@ export const authAPI = {
   },
   
   signup(userData) {
-    return axios.post('/auth/signup', userData)
+    return axios.post('/member/signup', userData)
   }
 }
 

@@ -11,17 +11,18 @@
             <b-form @submit.prevent="handleSignUp">
               <b-form-group
                 label="아이디"
-                label-for="username"
-                :state="usernameState"
-                :invalid-feedback="usernameFeedback"
+                label-for="memberId"
+                :state="memberIdState"
+                :invalid-feedback="memberIdFeedback"
               >
                 <b-form-input
-                  id="username"
-                  v-model="form.username"
+                  id="memberId"
+                  v-model="form.memberId"
                   type="text"
                   placeholder="아이디를 입력하세요"
                   required
-                  :state="usernameState"
+                  :state="memberIdState"
+                  autocomplete="username"
                 ></b-form-input>
               </b-form-group>
 
@@ -32,14 +33,24 @@
                 :state="passwordState"
                 :invalid-feedback="passwordFeedback"
               >
-                <b-form-input
-                  id="password"
-                  v-model="form.password"
-                  type="password"
-                  placeholder="비밀번호를 입력하세요"
-                  required
-                  :state="passwordState"
-                ></b-form-input>
+                <div class="password-input-group">
+                  <b-form-input
+                    id="password"
+                    v-model="form.password"
+                    :type="showPassword ? 'text' : 'password'"
+                    placeholder="비밀번호를 입력하세요"
+                    required
+                    :state="passwordState"
+                    autocomplete="new-password"
+                  ></b-form-input>
+                  <b-button 
+                    @click="showPassword = !showPassword" 
+                    class="show-password-btn"
+                    variant="outline-secondary"
+                  >
+                    👁
+                  </b-button>
+                </div>
                 <b-form-text>
                   비밀번호는 다음을 포함해야 합니다:
                   <ul class="mb-0">
@@ -71,12 +82,12 @@
 
               <b-form-group
                 label="한국 이름"
-                label-for="koreanName"
+                label-for="koName"
                 class="mt-3"
               >
                 <b-form-input
-                  id="koreanName"
-                  v-model="form.koreanName"
+                  id="koName"
+                  v-model="form.koName"
                   placeholder="한국 이름을 입력하세요"
                   required
                 ></b-form-input>
@@ -84,12 +95,12 @@
 
               <b-form-group
                 label="영어 이름"
-                label-for="englishName"
+                label-for="enName"
                 class="mt-3"
               >
                 <b-form-input
-                  id="englishName"
-                  v-model="form.englishName"
+                  id="enName"
+                  v-model="form.enName"
                   placeholder="영어 이름을 입력하세요"
                   required
                 ></b-form-input>
@@ -127,14 +138,14 @@
 
               <b-form-group
                 label="전화번호"
-                label-for="phone"
+                label-for="phoneNumber"
                 class="mt-3"
                 :state="phoneState"
                 :invalid-feedback="phoneFeedback"
               >
                 <b-form-input
-                  id="phone"
-                  v-model="form.phone"
+                  id="phoneNumber"
+                  v-model="form.phoneNumber"
                   type="tel"
                   placeholder="숫자만 입력하세요 (예: 01012345678)"
                   required
@@ -174,23 +185,24 @@ export default {
   data() {
     return {
       form: {
-        username: '',
+        memberId: '',
         password: '',
         passwordConfirm: '',
-        koreanName: '',
-        englishName: '',
+        koName: '',
+        enName: '',
         email: '',
         birthdate: '',
-        phone: ''
-      }
+        phoneNumber: ''
+      },
+      showPassword: false
     }
   },
   computed: {
-    usernameState() {
-      if (this.form.username.length === 0) return null
-      return this.form.username.length >= 4
+    memberIdState() {
+      if (this.form.memberId.length === 0) return null
+      return this.form.memberId.length >= 4
     },
-    usernameFeedback() {
+    memberIdFeedback() {
       return '아이디는 4자 이상이어야 합니다.'
     },
     passwordState() {
@@ -228,18 +240,18 @@ export default {
       return '올바른 이메일 형식이 아닙니다.'
     },
     phoneState() {
-      if (this.form.phone.length === 0) return null
-      return /^[0-9]{10,11}$/.test(this.form.phone)
+      if (this.form.phoneNumber.length === 0) return null
+      return /^[0-9]{10,11}$/.test(this.form.phoneNumber)
     },
     phoneFeedback() {
       return '올바른 전화번호 형식이 아닙니다. (10-11자리 숫자)'
     },
     isFormValid() {
-      return this.usernameState && 
+      return this.memberIdState && 
              this.passwordState && 
              this.passwordConfirmState && 
-             this.form.koreanName.length > 0 &&
-             this.form.englishName.length > 0 &&
+             this.form.koName.length > 0 &&
+             this.form.enName.length > 0 &&
              this.emailState &&
              this.form.birthdate &&
              this.phoneState
@@ -248,20 +260,20 @@ export default {
   methods: {
     validatePhone() {
       // 숫자만 입력되도록 필터링
-      this.form.phone = this.form.phone.replace(/[^0-9]/g, '')
+      this.form.phoneNumber = this.form.phoneNumber.replace(/[^0-9]/g, '')
     },
     async handleSignUp() {
       if (!this.isFormValid) return
 
       try {
         const userData = {
-          username: this.form.username,
+          memberId: this.form.memberId,
           password: this.form.password,
-          koreanName: this.form.koreanName,
-          englishName: this.form.englishName,
+          koName: this.form.koName,
+          enName: this.form.enName,
           email: this.form.email,
           birthdate: this.form.birthdate,
-          phone: this.form.phone
+          phoneNumber: this.form.phoneNumber
         }
 
         await authAPI.signup(userData)
@@ -285,5 +297,19 @@ export default {
 .card-header {
   background-color: #f8f9fa;
   border-bottom: 1px solid #eee;
+}
+
+.password-input-group {
+  position: relative;
+  display: flex;
+}
+
+.show-password-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
 }
 </style>
