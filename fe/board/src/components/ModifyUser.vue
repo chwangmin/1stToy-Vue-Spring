@@ -77,25 +77,41 @@
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group label="이메일">
+      <b-form-group 
+        label="이메일"
+        :state="emailState"
+        :invalid-feedback="emailFeedback"
+      >
         <b-form-input
           v-model="form.email"
           type="email"
           required
           placeholder="이메일을 입력하세요"
+          :state="emailState"
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group label="전화번호">
+      <b-form-group 
+        label="전화번호"
+        :state="phoneState"
+        :invalid-feedback="phoneFeedback"
+      >
         <b-form-input
           v-model="form.phoneNumber"
           required
           placeholder="전화번호를 입력하세요"
+          :state="phoneState"
+          @input="validatePhone"
         ></b-form-input>
       </b-form-group>
 
       <div class="text-right mt-3">
-        <b-button type="submit" variant="primary" class="mr-2">
+        <b-button 
+          type="submit" 
+          variant="primary" 
+          class="mr-2"
+          :disabled="!emailState || !phoneState"
+        >
           수정하기
         </b-button>
         <b-button variant="secondary" @click="closeModal">
@@ -182,6 +198,15 @@ export default {
       if (this.form.phoneNumber.length !== 11) return '전화번호는 정확히 11자리여야 합니다.'
       return '올바른 전화번호 형식이 아닙니다. (예: 01012345678)'
     },
+    emailState() {
+      if (this.form.email.length === 0) return null
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)
+    },
+    emailFeedback() {
+      if (this.form.email.length === 0) return '이메일을 입력해주세요.'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)) return '올바른 이메일 형식이 아닙니다.'
+      return '올바른 이메일 형식입니다.'
+    },
     isFormValid() {
       return this.passwordState && 
              this.passwordConfirmState &&
@@ -218,20 +243,18 @@ export default {
         filtered = filtered.slice(0, 11)
       }
       this.form.phoneNumber = filtered
-
-      if (filtered.length > 0 && filtered.length !== 11) {
-        this.$bvToast.toast('전화번호는 11자리여야 합니다.', {
-          title: '입력 오류',
-          variant: 'warning',
-          solid: true,
-          autoHideDelay: 3000
-        })
-      }
     },
     async handleSubmit() {
       if (!this.isFormValid) {
-        if (this.form.phoneNumber.length !== 11) {
-          this.$bvToast.toast('전화번호는 11자리여야 합니다. (예: 01012345678)', {
+        if (!this.emailState || !this.form.email) {
+          this.$bvToast.toast('올바른 이메일 형식을 입력해주세요.', {
+            title: '입력 오류',
+            variant: 'danger',
+            solid: true,
+            autoHideDelay: 3000
+          })
+        } else if (!this.phoneState || !this.form.phoneNumber) {
+          this.$bvToast.toast('올바른 전화번호 형식을 입력해주세요. (예: 01012345678)', {
             title: '입력 오류',
             variant: 'danger',
             solid: true,

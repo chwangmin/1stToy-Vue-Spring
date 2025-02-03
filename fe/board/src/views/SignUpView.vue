@@ -155,14 +155,16 @@
                 ></b-form-input>
               </b-form-group>
 
-              <b-button
-                type="submit"
-                variant="primary"
-                class="w-100 mt-4"
-                :disabled="!isFormValid"
-              >
-                회원가입
-              </b-button>
+              <div class="text-right mt-3">
+                <b-button
+                  type="submit"
+                  variant="primary"
+                  class="w-100 mt-4"
+                  :disabled="!emailState || !phoneState"
+                >
+                  회원가입
+                </b-button>
+              </div>
             </b-form>
 
             <div class="text-center mt-3">
@@ -248,7 +250,8 @@ export default {
       if (this.form.phoneNumber.length === 0) return '전화번호를 입력해주세요.'
       if (!this.form.phoneNumber.startsWith('0')) return '전화번호는 0으로 시작해야 합니다.'
       if (this.form.phoneNumber.length !== 11) return '전화번호는 정확히 11자리여야 합니다.'
-      return '올바른 전화번호 형식이 아닙니다. (예: 01012345678)'
+      if (!/^0\d{10}$/.test(this.form.phoneNumber)) return '올바른 전화번호 형식이 아닙니다. (예: 01012345678)'
+      return ''
     },
     isFormValid() {
       return this.memberIdState && 
@@ -269,28 +272,23 @@ export default {
       return yesterday.toISOString().split('T')[0]
     },
     validatePhone() {
-      // 숫자만 입력되도록 필터링하고 11자리로 제한
       let filtered = this.form.phoneNumber.replace(/[^0-9]/g, '')
       if (filtered.length > 11) {
         filtered = filtered.slice(0, 11)
       }
       this.form.phoneNumber = filtered
-
-      // 11자리가 아닐 때 사용자에게 알림
-      if (filtered.length > 0 && filtered.length !== 11) {
-        this.$bvToast.toast('전화번호는 11자리여야 합니다.', {
-          title: '입력 오류',
-          variant: 'warning',
-          solid: true,
-          autoHideDelay: 3000
-        })
-      }
     },
     async handleSignUp() {
       if (!this.isFormValid) {
-        // 폼이 유효하지 않을 때 전화번호 오류 체크
-        if (this.form.phoneNumber.length !== 11) {
-          this.$bvToast.toast('전화번호는 11자리여야 합니다. (예: 01012345678)', {
+        if (!this.emailState || !this.form.email) {
+          this.$bvToast.toast('올바른 이메일 형식을 입력해주세요.', {
+            title: '입력 오류',
+            variant: 'danger',
+            solid: true,
+            autoHideDelay: 3000
+          })
+        } else if (!this.phoneState || !this.form.phoneNumber) {
+          this.$bvToast.toast('올바른 전화번호 형식을 입력해주세요. (예: 01012345678)', {
             title: '입력 오류',
             variant: 'danger',
             solid: true,
