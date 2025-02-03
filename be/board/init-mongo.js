@@ -14,4 +14,5 @@ db.createUser({
 // 이후 board DB 생성
 db = db.getSiblingDB('board');
 db.createCollection('board');
+db.createCollection('comment');
 db.createCollection('member');

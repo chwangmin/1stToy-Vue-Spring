@@ -13,7 +13,11 @@ public enum WebSecurityPath {
             new SecurityPath("/member/modify", HttpMethod.POST),
             new SecurityPath("/member/leave", HttpMethod.POST),
             new SecurityPath("/member/info", HttpMethod.GET),
-            new SecurityPath("/auth/logout", HttpMethod.POST)
+            new SecurityPath("/auth/logout", HttpMethod.POST),
+            new SecurityPath("/board/{boardId}/comment", HttpMethod.POST),
+            new SecurityPath("/board/{boardId}/comment/{commentId}", HttpMethod.PUT),
+            new SecurityPath("/board/{boardId}/comment/{commentId}", HttpMethod.DELETE),
+            new SecurityPath("/board/{boardId}/comment/{commentId}/reply", HttpMethod.POST)
     );
 
     private final SecurityPath[] paths;
