@@ -90,11 +90,12 @@ public class BoardService {
             throw new BusinessException(ErrorCode.CANNOT_MODIFY_BOARD_YOU_NOT_CREATE);
         }
 
-        String fileName = saveFile(file);
+        String UUIDFileName = saveFile(file);
 
-        if (saveFile(file) != null){
-            modifyBoardRequest.setFileName(fileName);
-            modifyBoardRequest.setFilePath("/files/" + fileName);
+        if (UUIDFileName != null){
+            String realFileName = file.getOriginalFilename();
+            modifyBoardRequest.setFileName(realFileName);
+            modifyBoardRequest.setFilePath(UUIDFileName);
         }
 
         board.modify(modifyBoardRequest);

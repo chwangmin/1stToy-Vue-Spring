@@ -55,8 +55,10 @@ public class Board extends BaseTimeEntity {
     public void modify(ModifyBoardRequest modifyBoardRequest) {
         this.title = modifyBoardRequest.getTitle();
         this.content = modifyBoardRequest.getContent();
-        this.fileName = modifyBoardRequest.getFileName();
-        this.filePath = modifyBoardRequest.getFilePath();
+        if (modifyBoardRequest.getFileName() != null) {
+            this.fileName = modifyBoardRequest.getFileName();
+            this.filePath = modifyBoardRequest.getFilePath();
+        }
         initCreateDate();
     }
 

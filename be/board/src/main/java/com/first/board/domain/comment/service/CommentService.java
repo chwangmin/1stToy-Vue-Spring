@@ -8,6 +8,8 @@ import com.first.board.domain.comment.dto.request.ModifyCommentRequest;
 import com.first.board.domain.comment.dto.response.GetCommentResponse;
 import com.first.board.domain.comment.entity.Comment;
 import com.first.board.domain.comment.repository.CommentRepository;
+import com.first.board.domain.member.adaptor.MemberAdaptor;
+import com.first.board.domain.member.entity.Member;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.BusinessException;
 import com.first.board.global.mongodb.MongoUtil;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
+    private final MemberAdaptor memberAdaptor;
     private final BoardAdaptor boardAdaptor;
     private final CommentAdaptor commentAdaptor;
     private final CommentRepository commentRepository;
@@ -27,10 +30,12 @@ public class CommentService {
 
     public void createComment(String memberId, String boardId, CreateCommentRequest request) {
         validateBoard(boardId);
+        Member member = memberAdaptor.findByMemberId(memberId);
 
         Comment comment = Comment.builder()
                 .content(request.getContent())
                 .authorId(memberId)
+                .authorName(member.getKoName())
                 .boardId(boardId)
                 .isReply(false)
                 .build();
@@ -67,10 +72,12 @@ public class CommentService {
     public void createReply(String memberId, String boardId, String parentCommentId, CreateCommentRequest request) {
         validateBoard(boardId);
         validateParentComment(parentCommentId);
+        Member member = memberAdaptor.findByMemberId(memberId);
 
         Comment reply = Comment.builder()
                 .content(request.getContent())
                 .authorId(memberId)
+                .authorName(member.getKoName())
                 .boardId(boardId)
                 .parentId(parentCommentId)
                 .isReply(true)

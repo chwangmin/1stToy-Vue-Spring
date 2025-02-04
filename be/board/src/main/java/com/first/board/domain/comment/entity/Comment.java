@@ -23,6 +23,10 @@ public class Comment extends BaseTimeEntity {
     @NonNull
     private String authorId;
 
+    @BsonProperty("authorName")
+    @NonNull
+    private String authorName;
+
     @BsonProperty("boardId")
     @NonNull
     private String boardId;
@@ -38,11 +42,12 @@ public class Comment extends BaseTimeEntity {
 
     @Builder
     public Comment(String content, String authorId, String boardId,
-                   String parentId, Boolean isReply,
+                   String parentId, Boolean isReply, String authorName,
                    LocalDateTime createDate, LocalDateTime modifyDate) {
         this.id = new ObjectId();
         this.content = content;
         this.authorId = authorId;
+        this.authorName = authorName;
         this.boardId = boardId;
         this.parentId = parentId;
         this.isReply = isReply;
