@@ -13,8 +13,8 @@ import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 
 @OpenAPIDefinition(
         info = @Info(
-                title = "Owing api 명세서",
-                description = "### Owing API Reference for Developers\n\n" +
+                title = "LutesInfo api 명세서",
+                description = "### LutesInfo API Reference for Developers\n\n" +
                         "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6InN0cmluZyIsIm5hbWUiOiJzdHJpbmciLCJpYXQiOjE3Mzg1NjkyMTAsImV4cCI6MTc5ODU2OTIxMH0.O8fL3NiIJjX4AmtF79KIYVYtzzLmuKdhxlpvCFtE01g\n",
                 version = "v1",
                 contact = @Contact(
