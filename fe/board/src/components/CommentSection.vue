@@ -365,7 +365,15 @@ export default {
         this.replyingToId = null
         this.newReply = ''
         this.replyState = null
-        await this.loadComments()
+        
+        // 답글 목록 갱신하되 showReplies는 true로 유지
+        const comment = this.comments.find(c => c.id === commentId)
+        if (comment) {
+          const response = await commentAPI.getReplies(this.postId, commentId)
+          this.$set(comment, 'replies', response.data)
+          // showReplies를 true로 설정하여 답글이 계속 보이도록 함
+          this.$set(comment, 'showReplies', true)
+        }
       } catch (error) {
         this.$bvToast.toast('답글 작성에 실패했습니다.', {
           title: '에러',
