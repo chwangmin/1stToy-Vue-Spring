@@ -130,10 +130,23 @@ export default {
         this.$router.push('/')
       } catch (error) {
         console.error('로그인 실패:', error)
-        this.$bvToast.toast('로그인에 실패했습니다.', {
+        
+        // 에러 메시지 처리
+        let errorMessage = '로그인에 실패했습니다.'
+        
+        if (error.response && error.response.data) {
+          const { errorMessage: serverMessage } = error.response.data
+          
+          errorMessage = serverMessage
+          
+        }
+        
+        this.$bvToast.toast(errorMessage, {
           title: '에러',
           variant: 'danger',
-          solid: true
+          solid: true,
+          toaster: 'b-toaster-top-right',
+          autoHideDelay: 5000
         })
       }
     },
