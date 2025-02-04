@@ -85,7 +85,7 @@ public class MemberRepository {
         Bson filter = Filters.eq("memberId", member.getMemberId());
 
         Bson updates = Updates.combine(
-                Updates.set("failCnt", +1)
+                Updates.inc("failCnt", 1)
         );
 
         getCollection().updateOne(filter, updates);
