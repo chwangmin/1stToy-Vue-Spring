@@ -181,6 +181,11 @@ export const memberAPI = {
   // 비밀번호 찾기
   findPassword(email) {
     return axios.post('/member/find-pw', { email })
+  },
+
+  // 회원정보 수정 메소드 추가
+  modifyMemberInfo(memberData) {
+    return axios.put('/member/modify', memberData)
   }
 }
 
