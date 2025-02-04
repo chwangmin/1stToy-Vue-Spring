@@ -60,6 +60,26 @@
             browse-text="파일 선택"
           ></b-form-file>
         </b-form-group>
+
+        <!-- 구분선 추가 -->
+        <hr class="my-3">
+
+        <!-- 저장/취소 버튼 -->
+        <div class="text-right mb-4">
+          <b-button
+            variant="success"
+            class="mr-2"
+            @click="saveEdit"
+          >
+            저장
+          </b-button>
+          <b-button
+            variant="secondary"
+            @click="cancelEdit"
+          >
+            취소
+          </b-button>
+        </div>
       </div>
 
       <!-- 게시글 내용 (조회 모드) -->
@@ -77,6 +97,26 @@
             <i class="fas fa-file-download mr-1"></i> {{ post.fileName }}
           </b-link>
         </div>
+
+        <!-- 구분선 추가 -->
+        <hr class="my-3">
+
+        <!-- 토큰이 있을 때만 수정/삭제 버튼 표시 -->
+        <div v-if="accessToken" class="text-right mb-4">
+          <b-button
+            variant="danger"
+            class="mr-2"
+            @click="handleDelete"
+          >
+            삭제
+          </b-button>
+          <b-button
+            variant="primary"
+            @click="startEdit"
+          >
+            수정
+          </b-button>
+        </div>
       </div>
 
       <!-- 구분선 -->
@@ -90,46 +130,12 @@
 
       <!-- 버튼 그룹 -->
       <div class="text-right mt-3">
-        <template v-if="isEditing">
-          <b-button
-            variant="success"
-            class="mr-2"
-            @click="saveEdit"
-          >
-            저장
-          </b-button>
-          <b-button
-            variant="secondary"
-            @click="cancelEdit"
-          >
-            취소
-          </b-button>
-        </template>
-        <template v-else>
-          <!-- 토큰이 있을 때만 수정/삭제 버튼 표시 -->
-          <template v-if="accessToken">
-            <b-button
-              variant="danger"
-              class="mr-2"
-              @click="handleDelete"
-            >
-              삭제
-            </b-button>
-            <b-button
-              variant="primary"
-              class="mr-2"
-              @click="startEdit"
-            >
-              수정
-            </b-button>
-          </template>
-          <b-button
-            variant="secondary"
-            @click="closeModal"
-          >
-            닫기
-          </b-button>
-        </template>
+        <b-button
+          variant="secondary"
+          @click="closeModal"
+        >
+          닫기
+        </b-button>
       </div>
     </div>
   </b-modal>
@@ -260,8 +266,11 @@ export default {
 
         await boardAPI.updatePost(this.post.id, boardData, this.editedPost.newFile)
         
+        // 게시글 상세 정보 다시 불러오기
+        const updatedPost = await boardAPI.getPost(this.post.id)
+        this.$emit('post-updated', updatedPost.boardDto)
+        
         this.isEditing = false
-        this.closeModal()
       } catch (error) {
         console.error('수정 실패:', error)
         this.$bvToast.toast('자신의 게시글만 수정할 수 있습니다.', {

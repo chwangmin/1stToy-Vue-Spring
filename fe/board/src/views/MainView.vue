@@ -104,6 +104,7 @@
       @hidden="onModalHidden"
       @save-edit="saveEdit"
       @delete-post="deletePost"
+      @post-updated="handlePostUpdate"
     />
   </b-container>
 </template>
@@ -285,12 +286,20 @@ export default {
         event.target.value = '' // 파일 입력 초기화
       }
     },
+    async handlePostUpdate(updatedPost) {
+      this.selectedPost = updatedPost
+      // 전체 게시글 목록 새로고침
+      await this.fetchPosts()
+    },
     async saveEdit({ id, boardData, file }) {
       try {
-        // 게시글 수정 API 호출
         await boardAPI.updatePost(id, boardData, file)
         
-        // 수정 성공 후 전체 게시글 목록을 다시 불러옴
+        // 게시글 상세 정보 다시 불러오기
+        const updatedPost = await boardAPI.getPost(id)
+        this.selectedPost = updatedPost.boardDto
+        
+        // 전체 게시글 목록 새로고침
         await this.fetchPosts()
         
         this.$bvToast.toast('게시글이 수정되었습니다.', {
