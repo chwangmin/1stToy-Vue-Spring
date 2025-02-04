@@ -79,4 +79,25 @@ public class MemberRepository {
                         .first()
         );
     }
+
+
+    public void updateFailCnt(Member member) {
+        Bson filter = Filters.eq("memberId", member.getMemberId());
+
+        Bson updates = Updates.combine(
+                Updates.set("failCnt", +1)
+        );
+
+        getCollection().updateOne(filter, updates);
+    }
+
+    public void initFailCnt(Member member) {
+        Bson filter = Filters.eq("memberId", member.getMemberId());
+
+        Bson updates = Updates.combine(
+                Updates.set("failCnt", 0)
+        );
+
+        getCollection().updateOne(filter, updates);
+    }
 }

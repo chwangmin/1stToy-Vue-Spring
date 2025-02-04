@@ -85,6 +85,7 @@ public class MemberService {
             String encPassword = encryption.hashing(newPassword.getBytes(),member.getSalt());
             member.modifyPassword(encPassword);
             memberRepository.modify(member);
+            memberRepository.initFailCnt(member);
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.INVALID_AES_KEY);
         }

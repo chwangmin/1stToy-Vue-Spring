@@ -22,11 +22,11 @@ public class Encryption {
     @Value("{jwt.secretKey:test}")
     private String secretKey;
 
-    public String hashing(byte[] password, String Salt) throws Exception {
+    public String hashing(byte[] password, String salt) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
 
         for (int i = 0 ; i < 7120; i++){
-            String temp = byteToString(password) + Salt;
+            String temp = byteToString(password) + salt;
             md.update(temp.getBytes());
             password = md.digest();
         }

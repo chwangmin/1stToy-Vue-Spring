@@ -2,6 +2,7 @@ package com.first.board.domain.auth.service;
 
 import com.first.board.domain.member.adaptor.MemberAdaptor;
 import com.first.board.domain.member.entity.Member;
+import com.first.board.domain.member.repository.MemberRepository;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.AuthenticationException;
 import com.first.board.global.secuirty.dto.JwtTokenDto;
@@ -19,6 +20,7 @@ public class AuthService {
     private final MemberAdaptor memberAdaptor;
     private final JwtTokenProvider jwtTokenProvider;
     private final Encryption encryption;
+    private final MemberRepository memberRepository;
 
     public String reissue(String refreshToken) {
 
@@ -52,7 +54,7 @@ public class AuthService {
             String accessToken = jwtTokenProvider.createAccessToken(member);
             String refreshToken = jwtTokenProvider.createRefreshToken(member.getMemberId());
 
-            member.initCount();
+            memberRepository.initFailCnt(member);
 
             member.updateRefreshToken(refreshToken);
 
@@ -61,11 +63,9 @@ public class AuthService {
                     .refreshToken(refreshToken)
                     .build();
 
-        } catch (AuthenticationException e){
-            member.updateCount();
-            e.printStackTrace();
         } catch (Exception e) {
             member.updateCount();
+            memberRepository.updateFailCnt(member);
             e.printStackTrace();
         }
 
