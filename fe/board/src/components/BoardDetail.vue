@@ -5,6 +5,7 @@
     size="lg"
     hide-footer
     @hidden="onHidden"
+    class="board-detail-modal"
   >
     <div class="post-detail">
       <!-- 게시글 정보 헤더 -->
@@ -70,13 +71,22 @@
         </div>
 
         <!-- 첨부 파일 -->
-        <div v-if="post.fileName" class="post-files mb-4">
+        <div v-if="post.filePath" class="post-files mb-4">
           <h6>첨부 파일:</h6>
-          <b-link @click="handleFileDownload">
-            <i class="fas fa-download"></i> {{ post.fileName }}
+          <b-link @click="handleFileDownload" class="file-link">
+            <i class="fas fa-file-download mr-1"></i> {{ post.fileName }}
           </b-link>
         </div>
       </div>
+
+      <!-- 구분선 -->
+      <hr class="my-4">
+
+      <!-- 댓글 섹션 -->
+      <comment-section
+        :post-id="post.id"
+        :access-token="accessToken"
+      />
 
       <!-- 버튼 그룹 -->
       <div class="text-right mt-3">
@@ -126,10 +136,14 @@
 </template>
 
 <script>
-import { boardAPI } from '../api/api'
+import { boardAPI, commentAPI } from '../api/api'
+import CommentSection from './CommentSection.vue'
 
 export default {
   name: 'BoardDetail',
+  components: {
+    CommentSection
+  },
   props: {
     show: {
       type: Boolean,
@@ -150,7 +164,15 @@ export default {
         newFile: null
       },
       titleState: null,
-      contentState: null
+      contentState: null,
+      comments: [],
+      newComment: '',
+      commentState: null,
+      editingCommentId: null,
+      editedCommentContent: '',
+      replyingToId: null,
+      newReply: '',
+      replyState: null
     }
   },
   computed: {
@@ -164,6 +186,13 @@ export default {
     },
     accessToken() {
       return this.$store.state.accessToken
+    }
+  },
+  watch: {
+    showModal(newVal) {
+      if (newVal) {
+        this.loadComments()
+      }
     }
   },
   methods: {
@@ -208,40 +237,28 @@ export default {
       }
     },
     async saveEdit() {
-      // 유효성 검사
-      this.titleState = this.editedPost.title.trim() !== ''
-      this.contentState = this.editedPost.content.trim() !== ''
-
-      if (!this.titleState || !this.contentState) {
-        return
-      }
-
-      // 저장 확인 모달
-      const confirmed = await this.$bvModal.msgBoxConfirm('수정된 내용을 저장하시겠습니까?', {
-        title: '게시글 수정',
-        okVariant: 'primary',
-        okTitle: '저장',
-        cancelTitle: '취소',
-        hideHeaderClose: false,
-        centered: true
-      })
-
-      if (!confirmed) {
-        return
-      }
-
       try {
+        const formData = new FormData()
+        
         const boardData = {
           title: this.editedPost.title.trim(),
           content: this.editedPost.content.trim(),
           authorID: this.editedPost.authorID
         }
 
-        await this.$emit('save-edit', {
-          id: this.post.id,
-          boardData: boardData,
-          file: this.editedPost.newFile
-        })
+        // modifyBoardRequest를 JSON Blob으로 변환
+        formData.append('modifyBoardRequest', 
+          new Blob([JSON.stringify(boardData)], {
+            type: 'application/json'
+          })
+        )
+
+        // 새 파일이 있는 경우에만 추가
+        if (this.editedPost.newFile) {
+          formData.append('file', this.editedPost.newFile)
+        }
+
+        await boardAPI.updatePost(this.post.id, boardData, this.editedPost.newFile)
         
         this.isEditing = false
         this.closeModal()
@@ -306,6 +323,150 @@ export default {
           solid: true
         })
       }
+    },
+    async loadComments() {
+      try {
+        const response = await commentAPI.getComments(this.post.id)
+        this.comments = response.data
+      } catch (error) {
+        console.error('댓글 로드 실패:', error)
+      }
+    },
+    async submitComment() {
+      this.commentState = this.newComment.trim() !== ''
+      if (!this.commentState) return
+
+      try {
+        await commentAPI.createComment(this.post.id, this.newComment.trim())
+        this.newComment = ''
+        this.commentState = null
+        await this.loadComments()
+      } catch (error) {
+        this.$bvToast.toast('댓글 작성에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
+    },
+    startCommentEdit(comment) {
+      this.editingCommentId = comment.id
+      this.editedCommentContent = comment.content
+    },
+    cancelCommentEdit() {
+      this.editingCommentId = null
+      this.editedCommentContent = ''
+    },
+    async saveCommentEdit(commentId) {
+      if (!this.editedCommentContent.trim()) {
+        this.$bvToast.toast('댓글 내용을 입력해주세요.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+        return
+      }
+
+      try {
+        await commentAPI.modifyComment(
+          this.post.id,
+          commentId,
+          this.editedCommentContent.trim()
+        )
+        this.editingCommentId = null
+        this.editedCommentContent = ''
+        await this.loadComments()
+      } catch (error) {
+        this.$bvToast.toast('해당 댓글을 작성한 작성자가 아닙니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+      }
+    },
+    async deleteComment(commentId) {
+      try {
+        const confirmed = await this.$bvModal.msgBoxConfirm('정말 삭제하시겠습니까?', {
+          title: '댓글 삭제',
+          okVariant: 'danger',
+          okTitle: '삭제',
+          cancelTitle: '취소',
+          hideHeaderClose: false,
+          centered: true
+        })
+
+        if (confirmed) {
+          await commentAPI.deleteComment(this.post.id, commentId)
+          await this.loadComments()
+        }
+      } catch (error) {
+        this.$bvToast.toast('해당 댓글을 작성한 작성자가 아닙니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+      }
+    },
+    showReplyForm(commentId) {
+      this.replyingToId = commentId
+      this.newReply = ''
+      this.replyState = null
+    },
+    cancelReply() {
+      this.replyingToId = null
+      this.newReply = ''
+      this.replyState = null
+    },
+    async submitReply(commentId) {
+      this.replyState = this.newReply.trim() !== ''
+      if (!this.replyState) return
+
+      try {
+        await commentAPI.createReply(
+          this.post.id,
+          commentId,
+          this.newReply.trim()
+        )
+        this.replyingToId = null
+        this.newReply = ''
+        this.replyState = null
+        
+        // 답글 목록 갱신
+        const comment = this.comments.find(c => c.id === commentId)
+        if (comment) {
+          const response = await commentAPI.getReplies(this.post.id, commentId)
+          this.$set(comment, 'replies', response.data)
+          // showReplies는 변경하지 않음 (true 유지)
+          if (!comment.showReplies) {
+            this.$set(comment, 'showReplies', true)
+          }
+        }
+      } catch (error) {
+        this.$bvToast.toast('답글 작성에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
+    },
+    async loadReplies(commentId) {
+      try {
+        const comment = this.comments.find(c => c.id === commentId)
+        if (comment) {
+          if (!comment.showReplies) {
+            const response = await commentAPI.getReplies(this.post.id, commentId)
+            this.$set(comment, 'replies', response.data)
+          }
+          this.$set(comment, 'showReplies', !comment.showReplies)
+        }
+      } catch (error) {
+        console.error('답글 로드 실패:', error)
+        this.$bvToast.toast('답글을 불러오는데 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
     }
   }
 }
@@ -336,5 +497,83 @@ export default {
 
 .edit-form {
   padding: 1rem 0;
+}
+
+.comments-section {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+}
+
+.comment-item {
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
+}
+
+.comment-content {
+  white-space: pre-line;
+}
+
+.comment-actions button {
+  font-size: 0.875rem;
+}
+
+.comment-form {
+  margin-top: 1rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.fas {
+  font-size: 12px;
+  width: 12px;
+  transition: transform 0.3s ease;
+}
+
+.fa-chevron-down {
+  transform: rotate(0deg);
+}
+
+.fa-chevron-right {
+  transform: rotate(0deg);
+}
+
+.reply-section {
+  margin-left: 1rem;
+}
+
+.replies-list {
+  border-left: 2px solid #eee;
+  padding-left: 1rem;
+}
+
+.reply-item {
+  border-bottom: 1px solid #f5f5f5;
+  padding: 0.5rem 0;
+}
+
+.file-link {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: #007bff;
+}
+
+.file-link:hover {
+  text-decoration: underline;
 }
 </style>

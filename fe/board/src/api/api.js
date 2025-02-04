@@ -183,3 +183,43 @@ export const memberAPI = {
     return axios.post('/member/find-pw', { email })
   }
 }
+
+export const commentAPI = {
+  // 댓글 작성
+  createComment(boardId, content) {
+    return axios.post(`/board/${boardId}/comment`, {
+      content: content
+    })
+  },
+
+  // 댓글 조회
+  getComments(boardId, page = 0) {
+    return axios.get(`/board/${boardId}/comment`, {
+      params: { page }
+    })
+  },
+
+  // 댓글 수정
+  modifyComment(boardId, commentId, content) {
+    return axios.put(`/board/${boardId}/comment/${commentId}`, {
+      content: content
+    })
+  },
+
+  // 댓글 삭제
+  deleteComment(boardId, commentId) {
+    return axios.delete(`/board/${boardId}/comment/${commentId}`)
+  },
+
+  // 대댓글 작성
+  createReply(boardId, commentId, content) {
+    return axios.post(`/board/${boardId}/comment/${commentId}/reply`, {
+      content: content
+    })
+  },
+
+  // 대댓글 조회
+  getReplies(boardId, commentId) {
+    return axios.get(`/board/${boardId}/comment/${commentId}/reply`)
+  }
+}
