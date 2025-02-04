@@ -51,7 +51,7 @@ public class MemberController {
 
     @Tag(name = "member")
     @Operation(summary = "계정 변경", description = "계정 정보를 변경합니다.")
-    @PostMapping(path = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> modify(@AuthenticationPrincipal String memberId, @RequestBody @Valid ModifyMemberRequest modifyMemberRequest){
         memberService.modify(memberId, modifyMemberRequest);
 

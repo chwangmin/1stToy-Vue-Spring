@@ -10,7 +10,7 @@ public enum WebSecurityPath {
             new SecurityPath("/board", HttpMethod.POST),
             new SecurityPath("/board/{boardId}", HttpMethod.DELETE),
             new SecurityPath("/board/{boardId}", HttpMethod.PUT),
-            new SecurityPath("/member/modify", HttpMethod.POST),
+            new SecurityPath("/member/modify", HttpMethod.PUT),
             new SecurityPath("/member/leave", HttpMethod.POST),
             new SecurityPath("/member/info", HttpMethod.GET),
             new SecurityPath("/auth/logout", HttpMethod.POST),
