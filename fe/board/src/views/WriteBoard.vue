@@ -1,7 +1,7 @@
 <template>
   <b-container class="mt-4">
     <b-card>
-      <h4 class="mb-4">게시글 작성</h4>
+      <h4 class="mb-4">{{ boardType === 'question' ? '퀴즈 게시글 작성' : '일반 게시글 작성' }}</h4>
       
       <b-form @submit.prevent="handleSubmit">
         <!-- 제목 입력 -->
@@ -28,7 +28,7 @@
             v-model="form.content"
             rows="10"
             required
-            placeholder="내용을 입력하세요"
+            :placeholder="boardType === 'question' ? '퀴즈 내용을 입력하세요' : '내용을 입력하세요'"
           ></b-form-textarea>
         </b-form-group>
 
@@ -98,6 +98,7 @@ export default {
     return {
       isEdit: false,
       postId: null,
+      boardType: 'open', // 기본값은 일반 게시판
       form: {
         title: '',
         content: '',
@@ -106,8 +107,9 @@ export default {
     }
   },
   created() {
-    // URL 쿼리에서 게시글 ID를 확인
-    const id = this.$route.query.id
+    // URL 쿼리에서 게시글 타입과 ID를 확인
+    const { type, id } = this.$route.query
+    this.boardType = type || 'open'
     if (id) {
       this.loadPost(parseInt(id))
     }
@@ -127,11 +129,11 @@ export default {
     },
     async loadPost(id) {
       try {
-        const post = await boardAPI.getPost(id)
+        const post = await boardAPI.getPost(this.boardType, id)
         this.isEdit = true
         this.postId = id
-        this.form.title = post.title
-        this.form.content = post.content
+        this.form.title = post.boardDto.title
+        this.form.content = post.boardDto.content
         // 기존 파일 정보는 별도 처리 필요
       } catch (error) {
         console.error('게시글 로드 실패:', error)
@@ -140,7 +142,7 @@ export default {
           variant: 'danger',
           solid: true
         })
-        this.$router.push('/')
+        this.$router.push(`/${this.boardType}`)
       }
     },
     async handleSubmit() {
@@ -163,6 +165,7 @@ export default {
           // 새 글 작성일 경우 board 객체 사용
           const boardData = {
             title: this.form.title,
+            boardType: this.boardType.toUpperCase(),
             content: this.form.content,
             fileName: this.form.files && this.form.files.length > 0 ? this.form.files[0].name : '',
             filePath: ''
@@ -179,7 +182,7 @@ export default {
         }
 
         if (this.isEdit) {
-          await boardAPI.updatePost(this.postId, formData)
+          await boardAPI.updatePost(this.boardType, this.postId, formData)
         } else {
           await boardAPI.createPost(formData)
         }
@@ -190,7 +193,7 @@ export default {
           solid: true
         })
         
-        this.$router.push('/')
+        this.$router.push(`/${this.boardType}`)
       } catch (error) {
         console.error('게시글 저장 실패:', error)
         this.$bvToast.toast('게시글 저장에 실패했습니다.', {

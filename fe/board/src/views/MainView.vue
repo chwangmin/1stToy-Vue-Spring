@@ -1,5 +1,27 @@
 <template>
   <b-container class="mt-4">
+    <!-- 게시판 타입 선택 탭 수정 -->
+    <b-nav tabs class="mb-4">
+      <b-nav-item 
+        :to="'/'"
+        :active="boardType === 'all'"
+      >
+        전체 게시판
+      </b-nav-item>
+      <b-nav-item 
+        :to="'/open'"
+        :active="boardType === 'open'"
+      >
+        일반 게시판
+      </b-nav-item>
+      <b-nav-item 
+        :to="'/question'"
+        :active="boardType === 'question'"
+      >
+        퀴즈 게시판
+      </b-nav-item>
+    </b-nav>
+
     <!-- 검색과 정렬 기능 -->
     <b-row class="mb-3">
       <b-col sm="12" md="6" lg="4">
@@ -118,6 +140,12 @@ export default {
   components: {
     BoardDetail
   },
+  props: {
+    boardType: {
+      type: String,
+      default: 'all'  // 기본값을 'all'로 변경
+    }
+  },
   data() {
     return {
       isLoading: false,
@@ -164,6 +192,7 @@ export default {
       try {
         this.isLoading = true
         const response = await boardAPI.getPosts({
+          boardType: this.boardType === 'all' ? '' : this.boardType,  // 전체 게시판일 경우 빈 문자열 전송
           keyword: this.searchKeyword,
           page: this.currentPage - 1,
           sort: this.selectedSort
@@ -184,15 +213,10 @@ export default {
     },
     async viewPost(post) {
       try {
-        // 1. 조회수 증가 API 호출
         await boardAPI.increaseViews(post.id)
-        
-        // 2. 상세 정보 조회
         const detailResponse = await boardAPI.getPost(post.id)
         this.selectedPost = detailResponse.boardDto
         this.showModal = true
-        
-        // 3. 전체 게시글 목록을 다시 불러와서 최신 조회수 반영
         await this.fetchPosts()
       } catch (error) {
         console.error('게시글 조회 실패:', error)
@@ -204,7 +228,12 @@ export default {
       }
     },
     writePost() {
-      this.$router.push('/write')
+      // 전체 게시판에서는 일반 게시판으로 글쓰기 이동
+      const writeType = this.boardType === 'all' ? 'open' : this.boardType
+      this.$router.push({
+        path: '/write',
+        query: { type: writeType }
+      })
     },
     onModalHidden() {
       this.selectedPost = {
@@ -293,7 +322,7 @@ export default {
     },
     async saveEdit({ id, boardData, file }) {
       try {
-        await boardAPI.updatePost(id, boardData, file)
+        await boardAPI.updatePost(this.boardType, id, boardData, file)
         
         // 게시글 상세 정보 다시 불러오기
         const updatedPost = await boardAPI.getPost(id)
@@ -321,6 +350,7 @@ export default {
       try {
         this.isLoading = true // 로딩 상태 추가
         const response = await boardAPI.getPosts({
+          boardType: this.boardType,
           keyword: this.searchKeyword
         })
         this.posts = response.boards
@@ -342,6 +372,7 @@ export default {
       try {
         this.isLoading = true
         const response = await boardAPI.getPosts({
+          boardType: this.boardType,
           keyword: this.searchKeyword,
           page: page - 1
         })
@@ -394,6 +425,12 @@ export default {
         }
         this.fetchPosts()
       }
+    },
+    boardType: {
+      handler() {
+        this.fetchPosts()
+      },
+      immediate: true
     }
   }
 }

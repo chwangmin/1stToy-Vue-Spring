@@ -79,13 +79,15 @@ export const authAPI = {
 
 export const boardAPI = {
   // 게시글 목록 조회 (검색 포함)
-  getPosts: ({ keyword = '', page = 0, sort = 'CREATED_DESC' } = {}) => {
+  getPosts: ({ boardType = '', keyword = '', page = 0, sort = 'CREATED_DESC' } = {}) => {
     const params = new URLSearchParams()
     if (keyword) params.append('keyword', keyword)
     params.append('page', page)
     params.append('sort', sort)
     
-    return axios.get(`/board?${params.toString()}`)
+    // boardType이 'all'이거나 없으면 기본 엔드포인트 사용
+    const endpoint = boardType && boardType !== 'all' ? `/board/${boardType}` : '/board'
+    return axios.get(`${endpoint}?${params.toString()}`)
       .then(response => response.data)
   },
 

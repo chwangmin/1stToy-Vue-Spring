@@ -13,7 +13,20 @@ const router = new VueRouter({
         {
             path: '/',
             name: 'main',
-            component: MainView
+            component: MainView,
+            props: { boardType: 'all' }
+        },
+        {
+            path: '/open',
+            name: 'openBoard',
+            component: MainView,
+            props: { boardType: 'open' }
+        },
+        {
+            path: '/question',
+            name: 'questionBoard',
+            component: MainView,
+            props: { boardType: 'question' }
         },
         {
             path: '/login',
