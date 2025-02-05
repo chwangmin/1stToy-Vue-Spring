@@ -22,5 +22,14 @@ spring:
           timeout: 5000
           starttls:
             enable: true
+  rocketchat:
+    authtoken: ${ROCKET_CHAT_AUTH_TOKEN}
+    userid: ${ROCKET_CHAT_USER_ID}
+    roomid: ${ROCKET_CHAT_ROOM_ID}
+  main:
+    allow-bean-definition-overriding: true
 server:
   port: 8021
+logging:
+  level:
+    com.first.board.external: DEBUG

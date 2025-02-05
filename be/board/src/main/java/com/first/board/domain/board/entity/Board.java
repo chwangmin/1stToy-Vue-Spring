@@ -1,6 +1,7 @@
 package com.first.board.domain.board.entity;
 
 import com.first.board.domain.board.dto.request.ModifyBoardRequest;
+import com.first.board.domain.board.type.BoardType;
 import com.first.board.global.entity.BaseTimeEntity;
 import lombok.*;
 import org.bson.codecs.pojo.annotations.BsonId;
@@ -38,8 +39,12 @@ public class Board extends BaseTimeEntity {
     @NonNull
     private Long views;
 
+    @BsonProperty("boardType")
+    @NonNull
+    private BoardType boardType;
+
     @Builder
-    public Board(String title, String content, String authorID, String fileName, String filePath, LocalDateTime createDate, LocalDateTime modifyDate) {
+    public Board(String title, String content, String authorID, String fileName, String filePath, LocalDateTime createDate, LocalDateTime modifyDate, BoardType boardType) {
         this.id = new ObjectId();
         this.title = title;
         this.content = content;
@@ -49,6 +54,7 @@ public class Board extends BaseTimeEntity {
         this.views = 0L;
         this.createDate = createDate;
         this.modifyDate = modifyDate;
+        this.boardType = boardType;
         initCreateDate();
     }
 

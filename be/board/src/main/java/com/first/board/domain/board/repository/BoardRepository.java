@@ -2,6 +2,7 @@ package com.first.board.domain.board.repository;
 
 import com.first.board.domain.board.constant.BoardConstant;
 import com.first.board.domain.board.entity.Board;
+import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
 import com.first.board.global.mongodb.MongoUtil;
 import com.mongodb.client.MongoCollection;
@@ -34,9 +35,9 @@ public class BoardRepository {
         getCollection().insertOne(board);
     }
 
-    public List<Board> searchBoards(String searchText, int page, SortType sortType) {
+    public List<Board> searchBoards(String searchText, int page, SortType sortType, BoardType boardType) {
         try {
-            return executeSearch(searchText, page, sortType);
+            return executeSearch(searchText, page, sortType, boardType);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -70,14 +71,44 @@ public class BoardRepository {
         getCollection().updateOne(filter, updates);
     }
 
-    private List<Board> executeSearch(String searchText, int page, SortType sortType) {
+    private List<Board> executeSearch(String searchText, int page, SortType sortType, BoardType boardType) {
         MongoCollection<Board> collection = getCollection();
         Bson sort = createSort(sortType);
         int skip = calculateSkip(page);
 
-        return (searchText == null || searchText.trim().isEmpty())
-                ? findAllWithPagination(collection, sort, skip)
-                : findWithSearchCriteria(collection, searchText, sort, skip);
+        Bson filter = createFilter(searchText, boardType);
+
+        return collection.find(filter)
+                .sort(sort)
+                .skip(skip)
+                .limit(BoardConstant.Page.DEFAULT_SIZE)
+                .into(new ArrayList<>());
+    }
+
+    private Bson createFilter(String searchText, BoardType boardType) {
+        List<Bson> conditions = new ArrayList<>();
+
+        // BoardType 필터 추가
+        if (boardType != null) {
+            conditions.add(Filters.eq("boardType", boardType));
+        }
+
+        // 검색어 필터 추가
+        if (searchText != null && !searchText.trim().isEmpty()) {
+            String sanitizedText = Pattern.quote(searchText.trim());
+            conditions.add(Filters.or(
+                    Filters.regex("title", sanitizedText, "i"),
+                    Filters.regex("content", sanitizedText, "i")
+            ));
+        }
+
+        // 조건이 없으면 전체 검색
+        if (conditions.isEmpty()) {
+            return Filters.empty();
+        }
+
+        // 여러 조건을 AND로 결합
+        return conditions.size() == 1 ? conditions.get(0) : Filters.and(conditions);
     }
 
     private List<Board> findAllWithPagination(MongoCollection<Board> collection, Bson sort, int skip) {
@@ -121,17 +152,26 @@ public class BoardRepository {
         }
     }
 
-    public long findMaxNum(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return getCollection().countDocuments();
+    public long findMaxNum(String keyword, BoardType boardType) {
+        List<Bson> conditions = new ArrayList<>();
+
+        if (boardType != null) {
+            conditions.add(Filters.eq("boardType", boardType));
         }
 
-        String sanitizedText = Pattern.quote(keyword.trim());
-        Bson searchQuery = Filters.or(
-                Filters.regex("title", sanitizedText, "i"),
-                Filters.regex("content", sanitizedText, "i")
-        );
-        return getCollection().countDocuments(searchQuery);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String sanitizedText = Pattern.quote(keyword.trim());
+            conditions.add(Filters.or(
+                    Filters.regex("title", sanitizedText, "i"),
+                    Filters.regex("content", sanitizedText, "i")
+            ));
+        }
+
+        Bson filter = conditions.isEmpty() ?
+                Filters.empty() :
+                conditions.size() == 1 ? conditions.get(0) : Filters.and(conditions);
+
+        return getCollection().countDocuments(filter);
     }
 
 }

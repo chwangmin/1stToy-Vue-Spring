@@ -9,7 +9,13 @@ import com.first.board.domain.board.dto.response.GetBoardResponse;
 import com.first.board.domain.board.dto.response.GetBoardsResponse;
 import com.first.board.domain.board.entity.Board;
 import com.first.board.domain.board.repository.BoardRepository;
+import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
+import com.first.board.domain.member.adaptor.MemberAdaptor;
+import com.first.board.domain.member.entity.Member;
+import com.first.board.domain.member.repository.MemberRepository;
+import com.first.board.external.rocketchat.feign.RocketChatAPI;
+import com.first.board.external.rocketchat.service.RocketChatService;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.BusinessException;
 import com.first.board.global.json.ReadJsonFile;
@@ -41,6 +47,9 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardAdaptor boardAdaptor;
     private final ReadJsonFile readJsonFile;
+    private final RocketChatService rocketChatService;
+    private final MemberRepository memberRepository;
+    private final MemberAdaptor memberAdaptor;
 
     @Transactional
     public void createBoard(String memberId, CreateBoardRequest boardCreateRequest, MultipartFile file) throws IOException {
@@ -52,12 +61,17 @@ public class BoardService {
             boardCreateRequest.setFilePath(UUIDFileName);
         }
 
+        if(boardCreateRequest.getBoardType().isQuestion()){
+            Member member = memberAdaptor.findByMemberId(memberId);
+            rocketChatService.sendMessage(boardCreateRequest.getTitle(), member.getKoName());
+        }
+
         Board board = boardCreateRequest.toEntity(memberId);
         boardRepository.save(board);
     }
 
-    public GetBoardsResponse getBoards(String keyword, int page, SortType sort) {
-        List<Board> boards = boardRepository.searchBoards(keyword, page, sort);
+    public GetBoardsResponse getBoards(String keyword, int page, SortType sort, BoardType boardType) {
+        List<Board> boards = boardRepository.searchBoards(keyword, page, sort, boardType);
 
         List<BoardDto> boardDtos = new ArrayList<>();
 
@@ -65,7 +79,7 @@ public class BoardService {
             boardDtos.add(BoardDto.from(board));
         }
 
-        long maxBoardNum = (boardRepository.findMaxNum(keyword) - 1) / 10 + 1;
+        long maxBoardNum = (boardRepository.findMaxNum(keyword, boardType) - 1) / 10 + 1;
 
         return GetBoardsResponse.builder()
                 .boards(boardDtos)
@@ -153,9 +167,10 @@ public class BoardService {
                     .title(jsonObject.getString("title"))
                     .content(jsonObject.getString("content"))
                     .authorID(jsonObject.getString("authorID"))
-                    .fileName(jsonObject.getString("fileName"))
-                    .filePath(jsonObject.getString("filePath"))
+                    .fileName(jsonObject.has("fileName") ? jsonObject.getString("fileName") : null)
+                    .filePath(jsonObject.has("filePath") ? jsonObject.getString("filePath") : null)
                     .views(Long.parseLong(jsonObject.getJSONObject("views").getString("$numberLong")))
+                    .boardType(BoardType.valueOf(jsonObject.getString("boardType")))
                     .createdDate(LocalDateTime.parse(jsonObject.getJSONObject("createDate")
                             .getString("$date").replace("Z", "")))
                     .modifiedDate(LocalDateTime.parse(jsonObject.getJSONObject("modifyDate")
@@ -163,6 +178,7 @@ public class BoardService {
                     .build();
             boards.add(boardDto);
         }
+
 
         for (BoardDto boardDto : boards) {
             Board board = boardDto.toEntity();
