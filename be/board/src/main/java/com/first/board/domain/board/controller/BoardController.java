@@ -55,7 +55,7 @@ public class BoardController {
     }
 
     @Tag(name = "board")
-    @Operation(summary="질문 게시판 페이징 조회(+ 검색, 정렬)", description = "게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
+    @Operation(summary="질문 게시판 페이징 조회(+ 검색, 정렬)", description = "질문 게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
     @GetMapping("/question")
     public ResponseEntity<?> getQuestionBoards(
             @RequestParam(required = false) String keyword,
@@ -67,7 +67,7 @@ public class BoardController {
     }
 
     @Tag(name = "board")
-    @Operation(summary="질문 게시판 페이징 조회(+ 검색, 정렬)", description = "게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
+    @Operation(summary="자유 질문 게시판 페이징 조회(+ 검색, 정렬)", description = "자유 게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
     @GetMapping("/open")
     public ResponseEntity<?> getOpenBoards(
             @RequestParam(required = false) String keyword,
