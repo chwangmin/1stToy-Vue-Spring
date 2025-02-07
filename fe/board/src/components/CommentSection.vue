@@ -70,20 +70,20 @@
               <div class="d-flex align-items-center">
                 <div 
                   v-if="comment.replyNum > 0" 
-                  class="text-primary mr-2 cursor-pointer d-flex align-items-center"
+                  class="text-primary mr-2 reply-toggle cursor-pointer"
                   @click="loadReplies(comment.id)"
                 >
                   <i 
                     class="fas"
                     :class="comment.showReplies ? 'fa-chevron-down' : 'fa-chevron-right'"
                   ></i>
-                  <span class="ml-1">답글 {{ comment.replyNum }}개</span>
+                  <span class="ml-1 reply-count">답글 {{ comment.replyNum }}개</span>
                 </div>
                 <b-button
                   v-if="accessToken"
                   size="sm"
                   variant="link"
-                  class="p-0"
+                  class="p-0 reply-button"
                   @click="showReplyForm(comment.id)"
                 >
                   답글 작성
@@ -163,7 +163,35 @@
                           </div>
                         </div>
                         <div class="reply-content py-2">
-                          {{ reply.content }}
+                          <!-- 답글 수정 폼 -->
+                          <div v-if="editingCommentId === reply.id">
+                            <b-form-textarea
+                              v-model="editedCommentContent"
+                              rows="3"
+                              class="mb-2"
+                              placeholder="답글을 입력하세요"
+                            ></b-form-textarea>
+                            <div class="text-right">
+                              <b-button-group size="sm">
+                                <b-button
+                                  variant="success"
+                                  @click="saveCommentEdit(reply.id)"
+                                >
+                                  <i class="fas fa-check"></i> 저장
+                                </b-button>
+                                <b-button
+                                  variant="secondary"
+                                  @click="cancelCommentEdit"
+                                >
+                                  <i class="fas fa-times"></i> 취소
+                                </b-button>
+                              </b-button-group>
+                            </div>
+                          </div>
+                          <!-- 답글 내용 표시 -->
+                          <div v-else>
+                            {{ reply.content }}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -307,7 +335,30 @@ export default {
         )
         this.editingCommentId = null
         this.editedCommentContent = ''
-        await this.loadComments()
+        
+        // 댓글 목록 갱신하되 showReplies 상태와 replies 유지
+        const response = await commentAPI.getComments(this.postId)
+        const updatedComments = response.data.map(comment => {
+          const existingComment = this.comments.find(c => c.id === comment.id)
+          if (existingComment && existingComment.showReplies) {
+            // 답글이 표시 중인 댓글의 경우 답글도 함께 업데이트
+            return {
+              ...comment,
+              showReplies: true,
+              replies: comment.replies || existingComment.replies
+            }
+          }
+          return comment
+        })
+        this.comments = updatedComments
+
+        // 답글이 표시 중인 댓글들의 답글 목록 갱신
+        for (const comment of this.comments) {
+          if (comment.showReplies) {
+            const repliesResponse = await commentAPI.getReplies(this.postId, comment.id)
+            this.$set(comment, 'replies', repliesResponse.data)
+          }
+        }
       } catch (error) {
         this.$bvToast.toast('해당 댓글을 작성한 작성자가 아닙니다.', {
           title: '알림',
@@ -330,7 +381,30 @@ export default {
 
         if (confirmed) {
           await commentAPI.deleteComment(this.postId, commentId)
-          await this.loadComments()
+          
+          // 댓글 목록 갱신하되 showReplies 상태와 replies 유지
+          const response = await commentAPI.getComments(this.postId)
+          const updatedComments = response.data.map(comment => {
+            const existingComment = this.comments.find(c => c.id === comment.id)
+            if (existingComment && existingComment.showReplies) {
+              // 답글이 표시 중인 댓글의 경우 답글도 함께 업데이트
+              return {
+                ...comment,
+                showReplies: true,
+                replies: comment.replies || existingComment.replies
+              }
+            }
+            return comment
+          })
+          this.comments = updatedComments
+
+          // 답글이 표시 중인 댓글들의 답글 목록 갱신
+          for (const comment of this.comments) {
+            if (comment.showReplies) {
+              const repliesResponse = await commentAPI.getReplies(this.postId, comment.id)
+              this.$set(comment, 'replies', repliesResponse.data)
+            }
+          }
         }
       } catch (error) {
         this.$bvToast.toast('해당 댓글을 작성한 작성자가 아닙니다.', {
@@ -421,4 +495,70 @@ export default {
 
 <style scoped>
 /* ... existing styles ... */
+
+.reply-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  transition: background-color 0.2s;
+}
+
+.reply-toggle:hover {
+  background-color: #e9ecef;
+}
+
+.reply-count {
+  color: #0056b3;
+  font-weight: 500;
+}
+
+.reply-button {
+  color: #6c757d;
+  text-decoration: none;
+}
+
+.reply-button:hover {
+  color: #0056b3;
+  text-decoration: none;
+}
+
+.fas {
+  font-size: 12px;
+  width: 12px;
+  transition: transform 0.3s ease;
+}
+
+.fa-chevron-down {
+  transform: rotate(0deg);
+}
+
+.fa-chevron-right {
+  transform: rotate(0deg);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* 답글 영역 스타일 수정 */
+.replies-list {
+  border-left: 3px solid #e9ecef;
+  margin-left: 1rem;
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+}
+
+.reply-item {
+  margin-bottom: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.reply-item:hover {
+  background-color: #fff;
+}
 </style>

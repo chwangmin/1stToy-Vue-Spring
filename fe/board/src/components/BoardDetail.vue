@@ -214,9 +214,8 @@ export default {
   },
   watch: {
     showModal(newVal) {
-      if (newVal) {
-        this.loadComments()
-      }
+      // showModal watcher에서 loadComments 제거
+      // CommentSection 컴포넌트가 자체적으로 처리할 것입니다
     }
   },
   methods: {
