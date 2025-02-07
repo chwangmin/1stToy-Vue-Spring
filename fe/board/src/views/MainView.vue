@@ -94,7 +94,7 @@
         <!-- 버튼 그룹 -->
         <div class="text-right mt-3 d-flex justify-content-between">
           <!-- 데이터 불러오기 버튼과 파일 입력 -->
-          <div>
+          <div v-if="isAuthenticated">
             <input
               type="file"
               ref="fileInput"
@@ -112,7 +112,11 @@
           </div>
           
           <!-- 글쓰기 버튼 -->
-          <b-button variant="primary" @click="writePost">
+          <b-button 
+            v-if="isAuthenticated"
+            variant="primary" 
+            @click="writePost"
+          >
             글쓰기
           </b-button>
         </div>
@@ -134,6 +138,7 @@
 <script>
 import { boardAPI } from '../api/api'
 import BoardDetail from '../components/BoardDetail.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'MainView',
@@ -410,6 +415,9 @@ export default {
       this.$router.push({ query }).catch(() => {})
       await this.fetchPosts()
     }
+  },
+  computed: {
+    ...mapGetters(['isAuthenticated']),
   },
   // URL 파라미터 감시 수정
   watch: {
