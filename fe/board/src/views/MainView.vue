@@ -389,36 +389,12 @@ export default {
     },
     // 페이지 변경 핸들러 수정
     async handlePageChange(page) {
-      try {
-        this.isLoading = true
-        const response = await boardAPI.getPosts({
-          boardType: this.boardType,
-          keyword: this.searchKeyword,
-          page: page - 1
-        })
-        
-        // 데이터 업데이트
-        this.posts = response.boards
-        this.currentPage = page
-        this.maxBoardNum = response.maxBoardNum
-        
-        // URL 업데이트 (새로고침 없이)
-        const query = { ...this.$route.query, page: page }
-        this.$router.push({
-          path: this.$route.path,
-          query: query
-        }).catch(() => {})
-        
-      } catch (error) {
-        console.error('페이지 로딩 실패:', error)
-        this.$bvToast.toast('페이지를 불러오는데 실패했습니다.', {
-          title: '에러',
-          variant: 'danger',
-          solid: true
-        })
-      } finally {
-        this.isLoading = false
-      }
+      // URL 업데이트만 수행 (fetchPosts는 route watcher에서 처리)
+      const query = { ...this.$route.query, page: page }
+      this.$router.push({
+        path: this.$route.path,
+        query: query
+      }).catch(() => {})
     },
     // 정렬 변경 핸들러 추가
     async handleSortChange() {
@@ -436,24 +412,28 @@ export default {
   },
   // URL 파라미터 감시 수정
   watch: {
-    '$route.query': {
+    '$route': {
       immediate: true,
       deep: true,
-      handler(query) {
-        if (query.page) {
-          this.currentPage = parseInt(query.page)
+      handler(to, from) {
+        // 페이지 설정
+        if (to.query.page) {
+          this.currentPage = parseInt(to.query.page)
+        } else {
+          this.currentPage = 1
         }
-        if (query.sort) {
-          this.selectedSort = query.sort
+        // 정렬 설정
+        if (to.query.sort) {
+          this.selectedSort = to.query.sort
         }
+        
+        // boardType이 변경되면 페이지를 1로 초기화
+        if (!from || to.path !== from.path) {
+          this.currentPage = 1
+        }
+        
         this.fetchPosts()
       }
-    },
-    boardType: {
-      handler() {
-        this.fetchPosts()
-      },
-      immediate: true
     }
   }
 }
