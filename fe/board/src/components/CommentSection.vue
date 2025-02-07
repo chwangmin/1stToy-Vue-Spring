@@ -16,7 +16,7 @@
                 </small>
               </div>
               <!-- 댓글 수정/삭제 버튼 -->
-              <div v-if="accessToken" class="comment-actions">
+              <div v-if="isCommentAuthor(comment.authorId)" class="comment-actions">
                 <b-button
                   size="sm"
                   variant="outline-secondary"
@@ -142,7 +142,8 @@
                               <i class="fas fa-pen-fancy"></i> {{ formatDate(reply.modifyDate) }}
                             </small>
                           </div>
-                          <div v-if="accessToken" class="reply-actions">
+                          <!-- 답글 수정/삭제 버튼 -->
+                          <div v-if="isCommentAuthor(reply.authorId)" class="reply-actions">
                             <b-button-group size="sm">
                               <b-button
                                 variant="outline-secondary"
@@ -400,6 +401,18 @@ export default {
           variant: 'danger',
           solid: true
         })
+      }
+    },
+
+    isCommentAuthor(authorId) {
+      if (!this.accessToken) return false
+      
+      try {
+        const payload = JSON.parse(atob(this.accessToken.split('.')[1]))
+        return payload.memberId === authorId
+      } catch (error) {
+        console.error('토큰 파싱 실패:', error)
+        return false
       }
     }
   }

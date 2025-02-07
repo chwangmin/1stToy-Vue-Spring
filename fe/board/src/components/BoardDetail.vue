@@ -104,20 +104,20 @@
         <!-- 구분선 추가 -->
         <hr class="my-3">
 
-        <!-- 토큰이 있을 때만 수정/삭제 버튼 표시 -->
-        <div v-if="accessToken" class="text-right mb-4">
+        <!-- 토큰이 있고 작성자가 같을 때만 수정/삭제 버튼 표시 -->
+        <div v-if="isAuthor" class="text-right mb-4">
+          <b-button
+            variant="primary"
+            @click="startEdit"
+          >
+            수정
+          </b-button>
           <b-button
             variant="danger"
             class="mr-2"
             @click="handleDelete"
           >
             삭제
-          </b-button>
-          <b-button
-            variant="primary"
-            @click="startEdit"
-          >
-            수정
           </b-button>
         </div>
       </div>
@@ -147,6 +147,7 @@
 <script>
 import { boardAPI, commentAPI } from '../api/api'
 import CommentSection from './CommentSection.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'BoardDetail',
@@ -185,6 +186,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['isAuthenticated']),
     showModal: {
       get() {
         return this.show
@@ -195,6 +197,19 @@ export default {
     },
     accessToken() {
       return this.$store.state.accessToken
+    },
+    isAuthor() {
+      if (!this.accessToken) return false
+      
+      try {
+        // JWT 토큰에서 payload 추출
+        const payload = JSON.parse(atob(this.accessToken.split('.')[1]))
+        // 작성자 ID와 토큰의 _id 비교
+        return payload.memberId === this.post.authorID
+      } catch (error) {
+        console.error('토큰 파싱 실패:', error)
+        return false
+      }
     }
   },
   watch: {
