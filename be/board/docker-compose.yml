@@ -8,6 +8,8 @@ services:
       - .env
     depends_on:
       - choi7907-mongodb
+    volumes:
+      - ./static_files:/src/main/resources/static/files
     networks:
       - npm-network
 
