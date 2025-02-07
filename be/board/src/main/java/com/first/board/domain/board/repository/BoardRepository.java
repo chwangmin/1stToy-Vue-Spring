@@ -173,4 +173,11 @@ public class BoardRepository {
         return conditions;
     }
 
+    public void deleteAll() {
+        try {
+            getCollection().deleteMany(Filters.empty());
+        } catch (MongoException me) {
+            throw new RuntimeException("Failed to delete all boards", me);
+        }
+    }
 }

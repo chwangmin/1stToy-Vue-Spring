@@ -2,6 +2,7 @@ package com.first.board.domain.comment.repository;
 
 import com.first.board.domain.comment.entity.Comment;
 import com.first.board.global.mongodb.MongoUtil;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -93,5 +94,13 @@ public class CommentRepository {
                 .find(Filters.eq("parentId", parentId))
                 .sort(Sorts.ascending("createDate"))
                 .into(new ArrayList<>());
+    }
+
+    public void deleteAll() {
+        try {
+            getCollection().deleteMany(Filters.empty());
+        } catch (MongoException me) {
+            throw new RuntimeException("Failed to delete all comments", me);
+        }
     }
 }

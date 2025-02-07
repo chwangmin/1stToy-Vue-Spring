@@ -109,4 +109,12 @@ public class MemberRepository {
 
         getCollection().updateOne(filter, updates);
     }
+
+    public void deleteAll() {
+        try {
+            getCollection().deleteMany(Filters.empty());
+        } catch (MongoException me) {
+            throw new RuntimeException("Failed to delete all members", me);
+        }
+    }
 }

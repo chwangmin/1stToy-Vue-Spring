@@ -28,6 +28,20 @@ services:
     networks:
       - npm-network
 
+  choi7907-mongodb-test:
+    container_name: choi7907-mongodb-test
+    image: mongo:latest
+    ports:
+      - "21201:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: board
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - npm-network
+
 volumes:
   mongodb_data:
   spring_static_files:
