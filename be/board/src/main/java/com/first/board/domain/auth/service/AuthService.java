@@ -35,7 +35,7 @@ public class AuthService {
         }
     }
 
-    @Transactional
+    // @Transactional
     public JwtTokenDto login(String memberId, String password) {
 
         Member member = memberAdaptor.findByMemberId(memberId);
@@ -72,7 +72,7 @@ public class AuthService {
         return null;
     }
 
-    @Transactional
+    // @Transactional
     public void removeRefreshToken(String memberId) {
         Member member = memberAdaptor.findByMemberId(memberId);
         member.updateRefreshToken(null);

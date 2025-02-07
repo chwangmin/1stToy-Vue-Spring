@@ -20,7 +20,7 @@ public class MongoConf {
     private String dbName;
 
     @Bean
-    public MongoDatabase mongoDB() {
+    public MongoClient mongoClient() {
         CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(
                 PojoCodecProvider.builder()
                         .automatic(true)
@@ -33,8 +33,11 @@ public class MongoConf {
                         pojoCodecRegistry))
                 .build();
 
-        MongoClient mongoClient = MongoClients.create(settings);
-        return mongoClient.getDatabase(dbName);
+        return MongoClients.create(settings);
+    }
+
+    @Bean
+    public MongoDatabase mongoDB() {
+        return mongoClient().getDatabase(dbName);
     }
 }
-

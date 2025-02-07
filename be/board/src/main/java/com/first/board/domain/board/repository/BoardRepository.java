@@ -5,11 +5,13 @@ import com.first.board.domain.board.entity.Board;
 import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
 import com.first.board.global.mongodb.MongoUtil;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.InsertOneResult;
 import lombok.RequiredArgsConstructor;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -31,8 +34,14 @@ public class BoardRepository {
         return mongoDB.getCollection(COLLECTION_BOARD, Board.class);
     }
 
-    public void save(Board board) {
-        getCollection().insertOne(board);
+    public Board save(Board board) {
+        try{
+            InsertOneResult result = getCollection().insertOne(board);
+            board.setId(Objects.requireNonNull(result.getInsertedId()).asObjectId().getValue());
+            return board;
+        } catch (MongoException me){
+            throw new RuntimeException("Failed to save board", me);
+        }
     }
 
     public List<Board> searchBoards(String searchText, int page, SortType sortType, BoardType boardType) {
@@ -72,13 +81,12 @@ public class BoardRepository {
     }
 
     private List<Board> executeSearch(String searchText, int page, SortType sortType, BoardType boardType) {
-        MongoCollection<Board> collection = getCollection();
         Bson sort = createSort(sortType);
         int skip = calculateSkip(page);
 
         Bson filter = createFilter(searchText, boardType);
 
-        return collection.find(filter)
+        return getCollection().find(filter)
                 .sort(sort)
                 .skip(skip)
                 .limit(BoardConstant.Page.DEFAULT_SIZE)
@@ -86,21 +94,7 @@ public class BoardRepository {
     }
 
     private Bson createFilter(String searchText, BoardType boardType) {
-        List<Bson> conditions = new ArrayList<>();
-
-        // BoardType 필터 추가
-        if (boardType != null) {
-            conditions.add(Filters.eq("boardType", boardType));
-        }
-
-        // 검색어 필터 추가
-        if (searchText != null && !searchText.trim().isEmpty()) {
-            String sanitizedText = Pattern.quote(searchText.trim());
-            conditions.add(Filters.or(
-                    Filters.regex("title", sanitizedText, "i"),
-                    Filters.regex("content", sanitizedText, "i")
-            ));
-        }
+        List<Bson> conditions = findBoardByBoardTypeTitleContent(searchText, boardType);
 
         // 조건이 없으면 전체 검색
         if (conditions.isEmpty()) {
@@ -153,6 +147,16 @@ public class BoardRepository {
     }
 
     public long findMaxNum(String keyword, BoardType boardType) {
+        List<Bson> conditions = findBoardByBoardTypeTitleContent(keyword, boardType);
+
+        Bson filter = conditions.isEmpty() ?
+                Filters.empty() :
+                conditions.size() == 1 ? conditions.get(0) : Filters.and(conditions);
+
+        return getCollection().countDocuments(filter);
+    }
+
+    private List<Bson> findBoardByBoardTypeTitleContent(String keyword, BoardType boardType) {
         List<Bson> conditions = new ArrayList<>();
 
         if (boardType != null) {
@@ -166,12 +170,7 @@ public class BoardRepository {
                     Filters.regex("content", sanitizedText, "i")
             ));
         }
-
-        Bson filter = conditions.isEmpty() ?
-                Filters.empty() :
-                conditions.size() == 1 ? conditions.get(0) : Filters.and(conditions);
-
-        return getCollection().countDocuments(filter);
+        return conditions;
     }
 
 }

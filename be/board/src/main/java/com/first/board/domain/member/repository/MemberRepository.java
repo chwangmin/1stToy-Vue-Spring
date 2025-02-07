@@ -1,14 +1,17 @@
 package com.first.board.domain.member.repository;
 
 import com.first.board.domain.member.entity.Member;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.InsertOneResult;
 import lombok.RequiredArgsConstructor;
 import org.bson.conversions.Bson;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -39,8 +42,14 @@ public class MemberRepository {
                 .deleteMany(Filters.eq("isActive", false));
     }
 
-    public void save(Member member){
-        getCollection().insertOne(member);
+    public Member save(Member member){
+        try {
+            InsertOneResult result = getCollection().insertOne(member);
+            member.setId(Objects.requireNonNull(result.getInsertedId()).asObjectId().getValue());
+            return member;
+        } catch (MongoException me) {
+            throw new RuntimeException("Failed to save member", me);
+        }
     }
 
     public void leave(Member member){

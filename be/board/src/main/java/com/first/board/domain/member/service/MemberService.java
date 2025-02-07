@@ -18,14 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+// @Transactional(readOnly = true)
 public class MemberService {
     private final MemberAdaptor memberAdaptor;
     private final MemberRepository memberRepository;
     private final Encryption encryption;
     private final SendEmailLogic sendEmailLogic;
 
-    @Transactional
+    // @Transactional
     public void register(RegisterRequest registerRequest) {
 
         if (memberRepository.existsByMemberId(registerRequest.getMemberId())) {
@@ -61,7 +61,7 @@ public class MemberService {
         return MemberInfoResponse.from(member, phoneNumber);
     }
 
-    @Transactional
+    // @Transactional
     public void modify(String memberId, ModifyMemberRequest modifyMemberRequest) {
         Member member = memberAdaptor.findByMemberId(memberId);
 
@@ -75,7 +75,7 @@ public class MemberService {
         memberRepository.modify(member);
     }
 
-    @Transactional
+    // @Transactional
     public void sendPassword(String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new AuthenticationException(ErrorCode.EMAIL_NOT_EXISTS));
 

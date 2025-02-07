@@ -13,8 +13,6 @@ import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
 import com.first.board.domain.member.adaptor.MemberAdaptor;
 import com.first.board.domain.member.entity.Member;
-import com.first.board.domain.member.repository.MemberRepository;
-import com.first.board.external.rocketchat.feign.RocketChatAPI;
 import com.first.board.external.rocketchat.service.RocketChatService;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.BusinessException;
@@ -26,7 +24,6 @@ import org.json.JSONObject;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -42,23 +39,21 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
+// @Transactional(readOnly = true)
 public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardAdaptor boardAdaptor;
     private final ReadJsonFile readJsonFile;
     private final RocketChatService rocketChatService;
-    private final MemberRepository memberRepository;
     private final MemberAdaptor memberAdaptor;
 
-    @Transactional
+    // @Transactional
     public void createBoard(String memberId, CreateBoardRequest boardCreateRequest, MultipartFile file) throws IOException {
         String UUIDFileName = saveFile(file);
+        String realFileName = null;
 
         if (UUIDFileName != null){
-            String realFileName = file.getOriginalFilename();
-            boardCreateRequest.setFileName(realFileName);
-            boardCreateRequest.setFilePath(UUIDFileName);
+            realFileName = file.getOriginalFilename();
         }
 
         if(boardCreateRequest.getBoardType().isQuestion()){
@@ -66,7 +61,7 @@ public class BoardService {
             rocketChatService.sendMessage(boardCreateRequest.getTitle(), member.getKoName());
         }
 
-        Board board = boardCreateRequest.toEntity(memberId);
+        Board board = boardCreateRequest.toEntity(memberId, realFileName, UUIDFileName);
         boardRepository.save(board);
     }
 
@@ -136,7 +131,7 @@ public class BoardService {
         return null;
     }
 
-    @Transactional
+    // @Transactional
     public void deleteBoard(String memberId, String boardId) {
         Board board = boardAdaptor.findByBoardId(boardId);
 
@@ -148,14 +143,14 @@ public class BoardService {
         boardRepository.delete(board);
     }
 
-    @Transactional
+    // @Transactional
     public void viewBoard(String boardId) {
         Board board = boardAdaptor.findByBoardId(boardId);
         board.view();
         boardRepository.view(board);
     }
 
-    @Transactional
+    // @Transactional
     public void jsonBoard(MultipartFile jsonFile) {
         JSONArray array = readJsonFile.readArrays(jsonFile);
         List<BoardDto> boards = new ArrayList<>();
