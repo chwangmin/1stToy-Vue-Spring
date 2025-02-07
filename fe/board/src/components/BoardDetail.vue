@@ -30,56 +30,59 @@
 
       <!-- 게시글 내용 (수정 모드) -->
       <div v-if="isEditing" class="edit-form">
-        <b-form-group label="제목">
-          <b-form-input
-            v-model="editedPost.title"
-            required
-            placeholder="제목을 입력하세요"
-          ></b-form-input>
-        </b-form-group>
+        <b-form @submit.prevent="saveEdit">
+          <b-form-group label="제목">
+            <b-form-input
+              v-model="editedPost.title"
+              required
+              placeholder="제목을 입력하세요"
+            ></b-form-input>
+          </b-form-group>
 
-        <b-form-group label="내용" class="mt-3">
-          <b-form-textarea
-            v-model="editedPost.content"
-            rows="10"
-            required
-            placeholder="내용을 입력하세요"
-          ></b-form-textarea>
-        </b-form-group>
+          <b-form-group label="내용" class="mt-3">
+            <b-form-textarea
+              v-model="editedPost.content"
+              rows="10"
+              required
+              placeholder="내용을 입력하세요"
+            ></b-form-textarea>
+          </b-form-group>
 
-        <!-- 파일 업로드 -->
-        <b-form-group v-if="post.fileName" label="현재 파일" class="mt-3">
-          <div>{{ post.fileName }}</div>
-        </b-form-group>
+          <!-- 파일 업로드 -->
+          <b-form-group v-if="post.fileName" label="현재 파일" class="mt-3">
+            <div>{{ post.fileName }}</div>
+          </b-form-group>
 
-        <b-form-group label="새 파일 첨부" class="mt-3">
-          <b-form-file
-            v-model="editedPost.newFile"
-            placeholder="파일을 선택하거나 드래그하세요"
-            drop-placeholder="파일을 여기에 놓으세요"
-            browse-text="파일 선택"
-          ></b-form-file>
-        </b-form-group>
+          <b-form-group label="새 파일 첨부" class="mt-3">
+            <b-form-file
+              v-model="editedPost.newFile"
+              placeholder="파일을 선택하거나 드래그하세요"
+              drop-placeholder="파일을 여기에 놓으세요"
+              browse-text="파일 선택"
+            ></b-form-file>
+          </b-form-group>
 
-        <!-- 구분선 추가 -->
-        <hr class="my-3">
+          <!-- 구분선 추가 -->
+          <hr class="my-3">
 
-        <!-- 저장/취소 버튼 -->
-        <div class="text-right mb-4">
-          <b-button
-            variant="success"
-            class="mr-2"
-            @click="saveEdit"
-          >
-            저장
-          </b-button>
-          <b-button
-            variant="secondary"
-            @click="cancelEdit"
-          >
-            취소
-          </b-button>
-        </div>
+          <!-- 저장/취소 버튼 -->
+          <div class="text-right mb-4">
+            <b-button
+              type="submit"
+              variant="success"
+              class="mr-2"
+            >
+              저장
+            </b-button>
+            <b-button
+              type="button"
+              variant="secondary"
+              @click="cancelEdit"
+            >
+              취소
+            </b-button>
+          </div>
+        </b-form>
       </div>
 
       <!-- 게시글 내용 (조회 모드) -->
