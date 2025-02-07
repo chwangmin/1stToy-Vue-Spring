@@ -7,11 +7,12 @@ import com.first.board.domain.board.dto.request.ModifyBoardRequest;
 import com.first.board.domain.board.dto.response.GetBoardResponse;
 import com.first.board.domain.board.dto.response.GetBoardsResponse;
 import com.first.board.domain.board.entity.Board;
+import com.first.board.domain.board.fixture.BoardFixture;
 import com.first.board.domain.board.repository.BoardRepository;
 import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
 import com.first.board.domain.member.entity.Member;
-import com.first.board.domain.member.entity.Role;
+import com.first.board.domain.member.fixture.MemberFixture;
 import com.first.board.domain.member.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
@@ -22,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 @Slf4j
 @DisplayName(("[게시글 관리]"))
@@ -44,44 +44,21 @@ public class BoardServiceTest extends TestConfig {
     private Member initMember;
 
     private final int FIRST_PAGE = 0;
-    private final String INIT_BOARD_TITLE = "테스트 게시글";
-    private final String INIT_BOARD_CONTENT = "테스트 내용입니다.";
 
     @BeforeEach
-    void before() {
+    void beforeEach() {
         memberRepository.deleteAll();
         boardRepository.deleteAll();
 
-        initMember = memberRepository.save(Member.builder()
-                .memberId("testUser")
-                .koName("홍길동")
-                .enName("Hong Gil Dong")
-                .email("test@example.com")
-                .encryptBirthDate("19900101")
-                .encryptPhoneNumber("01012345678")
-                .encryptPassword("hashedPassword123")
-                .role(Role.USER)
-                .failCnt((short) 0)
-                .salt("testSalt")
-                .refreshToken("testRefreshToken")
-                .build());
+        initMember = memberRepository.save(MemberFixture.create());
 
-        initBoard = boardRepository.save(Board.builder()
-                .title(INIT_BOARD_TITLE)
-                .content(INIT_BOARD_CONTENT)
-                .authorID(initMember.getMemberId())
-                .fileName("test_file.txt")
-                .filePath("/uploads/test_file.txt")
-                .createDate(LocalDateTime.now())
-                .modifyDate(LocalDateTime.now())
-                .boardType(BoardType.OPEN)
-                .build());
+        initBoard = boardRepository.save(BoardFixture.create(initMember.getMemberId()));
     }
 
     @Nested
     class createBoard {
         @Test
-        void 성공_게시판_생성_한다() throws IOException {
+        void 성공_게시판_생성한다() throws IOException {
             //given
             CreateBoardRequest createBoardRequest = CreateBoardRequest.builder()
                     .title("생성 테스트 게시글")
@@ -116,8 +93,8 @@ public class BoardServiceTest extends TestConfig {
             //then
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(getBoardsResponse.getBoards()).hasSize(1);
-                softly.assertThat(getBoardsResponse.getBoards().get(0).getTitle()).isEqualTo(INIT_BOARD_TITLE);
-                softly.assertThat(getBoardsResponse.getBoards().get(0).getContent()).isEqualTo(INIT_BOARD_CONTENT);
+                softly.assertThat(getBoardsResponse.getBoards().get(0).getTitle()).isEqualTo(BoardFixture.INIT_BOARD_TITLE);
+                softly.assertThat(getBoardsResponse.getBoards().get(0).getContent()).isEqualTo(BoardFixture.INIT_BOARD_CONTENT);
             });
         }
     }
@@ -134,8 +111,8 @@ public class BoardServiceTest extends TestConfig {
 
             //then
             SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(getBoardResponse.getBoardDto().getTitle()).isEqualTo(INIT_BOARD_TITLE);
-                softly.assertThat(getBoardResponse.getBoardDto().getContent()).isEqualTo(INIT_BOARD_CONTENT);
+                softly.assertThat(getBoardResponse.getBoardDto().getTitle()).isEqualTo(BoardFixture.INIT_BOARD_TITLE);
+                softly.assertThat(getBoardResponse.getBoardDto().getContent()).isEqualTo(BoardFixture.INIT_BOARD_CONTENT);
             });
         }
     }
