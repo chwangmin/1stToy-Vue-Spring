@@ -311,13 +311,30 @@ export default {
 
         await authAPI.signup(userData)
         
-        this.$router.push('/login')
+        this.$router.push({
+          path: '/login',
+          query: { 
+            signupSuccess: 'true',
+            username: userData.memberId,
+            koName: userData.koName
+          }
+        })
       } catch (error) {
         console.error('회원가입 실패:', error)
-        this.$bvToast.toast('회원가입에 실패했습니다.', {
-          title: '에러',
+        
+        let errorMessage = '회원가입에 실패했습니다.'
+        
+        if (error.response && error.response.data) {
+          const { errorMessage: serverMessage } = error.response.data
+          errorMessage = serverMessage
+        }
+        
+        this.$bvToast.toast(errorMessage, {
+          title: '회원가입 실패',
           variant: 'danger',
           solid: true,
+          toaster: 'b-toaster-top-right',
+          appendToast: true,
           autoHideDelay: 3000
         })
       }

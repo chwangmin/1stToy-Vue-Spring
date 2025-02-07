@@ -118,6 +118,26 @@ export default {
       isLoading: false
     }
   },
+  mounted() {
+    const { signupSuccess, username, koName } = this.$route.query
+    
+    if (signupSuccess === 'true' && username) {
+      console.log("ttttttttttttttttttttttttttttttttttttttt")
+      this.username = username
+      
+      this.$bvToast.toast(`${koName}님의 회원가입이 완료되었습니다. 로그인해주세요.`, {
+        title: '회원가입 성공',
+        variant: 'success',
+        solid: true,
+        toaster: 'b-toaster-top-right',
+        appendToast: true,
+        autoHideDelay: 3000
+      })
+      
+      // query parameter 제거
+      this.$router.replace({ path: '/login' }).catch(() => {})
+    }
+  },
   methods: {
     async handleLogin() {
       try {
