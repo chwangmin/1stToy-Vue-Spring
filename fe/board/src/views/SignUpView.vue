@@ -310,6 +310,7 @@ export default {
         }
 
         await authAPI.signup(userData)
+        
         this.$router.push('/login')
       } catch (error) {
         console.error('회원가입 실패:', error)

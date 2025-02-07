@@ -155,6 +155,21 @@ export default {
     return {
       isLoading: false,
       fields: [
+        { 
+          key: 'boardType', 
+          label: '게시판 종류', 
+          sortable: true,
+          formatter: (value) => {
+            switch(value) {
+              case 'QUESTION':
+                return '질문'
+              case 'OPEN':
+                return '일반'
+              default:
+                return value
+            }
+          }
+        },
         { key: 'title', label: '제목', sortable: true },
         { key: 'authorID', label: '작성자', sortable: true },
         { key: 'createdDate', label: '작성일', sortable: true },
