@@ -12,3 +12,8 @@ spring:
       uri: mongodb://admin:admin@mongo_container:27017/board?authSource=admin
 server:
   port: 8021
+
+management:
+  health:
+    defaults:
+      enabled: false
