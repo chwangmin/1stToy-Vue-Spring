@@ -12,7 +12,6 @@ import java.util.List;
 @Builder
 public class GetBoardsResponse {
     List<BoardDto> boards;
-    int totalPages;
-    long totalElements;
     int currentPage;
+    long maxBoardNum;
 }

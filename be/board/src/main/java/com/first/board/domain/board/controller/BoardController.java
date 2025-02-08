@@ -5,6 +5,7 @@ import com.first.board.domain.board.dto.request.ModifyBoardRequest;
 import com.first.board.domain.board.dto.response.GetBoardResponse;
 import com.first.board.domain.board.dto.response.GetBoardsResponse;
 import com.first.board.domain.board.service.BoardService;
+import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,7 +50,31 @@ public class BoardController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "CREATED_DESC") SortType sort
     ){
-        GetBoardsResponse getBoardsResponse = boardService.getBoards(keyword, page, sort);
+        GetBoardsResponse getBoardsResponse = boardService.getBoards(keyword, page, sort, null);
+        return ResponseEntity.ok(getBoardsResponse);
+    }
+
+    @Tag(name = "board")
+    @Operation(summary="질문 게시판 페이징 조회(+ 검색, 정렬)", description = "질문 게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
+    @GetMapping("/question")
+    public ResponseEntity<?> getQuestionBoards(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "CREATED_DESC") SortType sort
+    ){
+        GetBoardsResponse getBoardsResponse = boardService.getBoards(keyword, page, sort, BoardType.QUESTION);
+        return ResponseEntity.ok(getBoardsResponse);
+    }
+
+    @Tag(name = "board")
+    @Operation(summary="자유 질문 게시판 페이징 조회(+ 검색, 정렬)", description = "자유 게시판에서 게시글을 조회합니다 (검색과 정렬 포함)")
+    @GetMapping("/open")
+    public ResponseEntity<?> getOpenBoards(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "CREATED_DESC") SortType sort
+    ){
+        GetBoardsResponse getBoardsResponse = boardService.getBoards(keyword, page, sort, BoardType.OPEN);
         return ResponseEntity.ok(getBoardsResponse);
     }
 
@@ -67,7 +92,7 @@ public class BoardController {
     public ResponseEntity<Void> modifyBoard(
             @AuthenticationPrincipal String memberId,
             @PathVariable String boardId,
-            @RequestBody ModifyBoardRequest modifyBoardRequest,
+            @RequestPart ModifyBoardRequest modifyBoardRequest,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) throws IOException {
         boardService.modifyBoard(memberId, boardId, modifyBoardRequest, file);
@@ -84,7 +109,7 @@ public class BoardController {
 
     @Tag(name = "board")
     @Operation(summary="조회수 증가", description = "파일을 다운로드 합니다.")
-    @GetMapping(path="/{boardId}/view")
+    @PostMapping(path="/{boardId}/view")
     public ResponseEntity<Void> viewBoard(@PathVariable String boardId) {
         boardService.viewBoard(boardId);
         return ResponseEntity.ok().build();
@@ -100,15 +125,18 @@ public class BoardController {
         return ResponseEntity.ok().build();
     }
 
-    //todo 다운로드 되는 지 확인
     @Tag(name = "board")
     @Operation(summary="파일 다운로드", description = "파일을 다운로드 합니다.")
-    @GetMapping(path="/download/{fileName}")
-    public ResponseEntity<Resource> fileDownloadBoard(@PathVariable String fileName) throws MalformedURLException {
+    @GetMapping(path="/download/{filePath}")
+    public ResponseEntity<Resource> fileDownloadBoard(@PathVariable String filePath) throws MalformedURLException {
+        Resource resource = boardService.fileDownloadBoard(filePath);
 
-        Resource resource = boardService.fileDownloadBoard(fileName);
+        String fileName = filePath.split("_", 2)[1];
+
+        String contentDisposition = "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"";
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(resource);
     }
 }

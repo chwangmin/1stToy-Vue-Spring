@@ -1,0 +1,15 @@
+services:
+  choi7907-vue:
+    container_name: choi7907-vue
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "21080:80"
+    networks:
+      - npm-network
+    restart: unless-stopped
+
+networks:
+  npm-network:
+    external: true

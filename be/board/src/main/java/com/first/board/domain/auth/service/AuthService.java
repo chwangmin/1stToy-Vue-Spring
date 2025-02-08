@@ -17,10 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
-    private final MemberRepository memberRepository;
     private final MemberAdaptor memberAdaptor;
     private final JwtTokenProvider jwtTokenProvider;
     private final Encryption encryption;
+    private final MemberRepository memberRepository;
 
     public String reissue(String refreshToken) {
 
@@ -35,7 +35,7 @@ public class AuthService {
         }
     }
 
-    @Transactional
+    // @Transactional
     public JwtTokenDto login(String memberId, String password) {
 
         Member member = memberAdaptor.findByMemberId(memberId);
@@ -52,9 +52,9 @@ public class AuthService {
             }
 
             String accessToken = jwtTokenProvider.createAccessToken(member);
-            String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+            String refreshToken = jwtTokenProvider.createRefreshToken(member.getMemberId());
 
-            member.initCount();
+            memberRepository.initFailCnt(member);
 
             member.updateRefreshToken(refreshToken);
 
@@ -63,18 +63,16 @@ public class AuthService {
                     .refreshToken(refreshToken)
                     .build();
 
-        } catch (AuthenticationException e){
-            member.updateCount();
-            e.printStackTrace();
         } catch (Exception e) {
             member.updateCount();
+            memberRepository.updateFailCnt(member);
             e.printStackTrace();
         }
 
         return null;
     }
 
-    @Transactional
+    // @Transactional
     public void removeRefreshToken(String memberId) {
         Member member = memberAdaptor.findByMemberId(memberId);
         member.updateRefreshToken(null);

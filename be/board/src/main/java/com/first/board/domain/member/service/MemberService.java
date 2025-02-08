@@ -8,24 +8,32 @@ import com.first.board.domain.member.entity.Member;
 import com.first.board.domain.member.repository.MemberRepository;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.AuthenticationException;
+import com.first.board.global.error.exception.BusinessException;
+import com.first.board.global.mail.SendEmailLogic;
 import com.first.board.global.secuirty.encryption.Encryption;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+// @Transactional(readOnly = true)
 public class MemberService {
     private final MemberAdaptor memberAdaptor;
     private final MemberRepository memberRepository;
     private final Encryption encryption;
+    private final SendEmailLogic sendEmailLogic;
 
-    @Transactional
+    // @Transactional
     public void register(RegisterRequest registerRequest) {
 
         if (memberRepository.existsByMemberId(registerRequest.getMemberId())) {
             throw new AuthenticationException(ErrorCode.ALREADY_REGISTERED_MEMBER);
+        }
+
+        if (memberRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new AuthenticationException(ErrorCode.ALREADY_REGISTERED_EMAIL);
         }
 
         String salt = encryption.getSalt();
@@ -42,6 +50,7 @@ public class MemberService {
     public void leave(String memberId) {
         Member member = memberAdaptor.findByMemberId(memberId);
         member.leave();
+        memberRepository.leave(member);
     }
 
     public MemberInfoResponse info(String memberId) {
@@ -52,7 +61,7 @@ public class MemberService {
         return MemberInfoResponse.from(member, phoneNumber);
     }
 
-    @Transactional
+    // @Transactional
     public void modify(String memberId, ModifyMemberRequest modifyMemberRequest) {
         Member member = memberAdaptor.findByMemberId(memberId);
 
@@ -63,5 +72,24 @@ public class MemberService {
         modifyMemberRequest.setPhoneNumber(encryptPhoneNumber);
 
         member.modify(modifyMemberRequest);
+        memberRepository.modify(member);
+    }
+
+    // @Transactional
+    public void sendPassword(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new AuthenticationException(ErrorCode.EMAIL_NOT_EXISTS));
+
+        String newPassword = sendEmailLogic.makeRandomPassword();
+
+        try {
+            String encPassword = encryption.hashing(newPassword.getBytes(),member.getSalt());
+            member.modifyPassword(encPassword);
+            memberRepository.modify(member);
+            memberRepository.initFailCnt(member);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_AES_KEY);
+        }
+
+        sendEmailLogic.sendEmail(email, newPassword);
     }
 }

@@ -38,17 +38,17 @@ public class JwtTokenProvider {
     }
 
     private Date createAccessTokenExpireTime(Date now){
-        return new Date(now.getTime() + (1000L * 60 * 1000000));
+        return new Date(now.getTime() + (1000L * 60 * 60));
     }
 
     private Date createRefreshTokenExpireTime(Date now){
-        return new Date(now.getTime() + (1000L * 60 *60));
+        return new Date(now.getTime() + (1000L * 60 * 60 * 48));
     }
 
     public JwtTokenDto createJwtTokenResponse(Member member) {
         return JwtTokenDto.builder()
                 .accessToken(createAccessToken(member))
-                .refreshToken(createRefreshToken(member.getId()))
+                .refreshToken(createRefreshToken(member.getIdtoString()))
                 .build();
     }
 

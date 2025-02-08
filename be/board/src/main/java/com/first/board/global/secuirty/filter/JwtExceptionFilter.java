@@ -1,6 +1,5 @@
 package com.first.board.global.secuirty.filter;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.ErrorResponse;

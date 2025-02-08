@@ -20,7 +20,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     /**
-     * javax.validation.Valid 또는 @Validated binding error가 발생할 경우
+     * jakarta.validation.Valid 또는 @Validated binding error가 발생할 경우
      */
     @ExceptionHandler(BindException.class)
     protected ResponseEntity<ErrorResponse> handleBindException(BindException e) {

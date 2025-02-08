@@ -8,9 +8,6 @@ import com.first.board.global.secuirty.dto.JwtTokenDto;
 import com.first.board.global.secuirty.jwt.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -18,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 
 @RestController
@@ -79,7 +79,7 @@ public class AuthController {
 
     @Tag(name = "auth")
     @Operation(summary = "로그아웃 API", description = "로그아웃 API")
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal String memberId,
                                          HttpServletResponse response) {
 

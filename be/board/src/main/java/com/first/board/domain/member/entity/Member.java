@@ -1,57 +1,70 @@
 package com.first.board.domain.member.entity;
 
 import com.first.board.domain.member.dto.request.ModifyMemberRequest;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.*;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
+import org.bson.types.ObjectId;
 
-@Document(collection = "member")
 @Getter
-public class Member {
-    @Id
-    private String id;
+@Setter
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+public class Member{
+    @BsonId
+    private ObjectId id;
 
-    @Indexed(unique = true)
+    @BsonProperty("memberId")
     private String memberId;
 
+    @BsonProperty("koName")
     @NonNull
     private String koName;
 
+    @BsonProperty("enName")
     @NonNull
     private String enName;
 
+    @BsonProperty("email")
     @NonNull
     private String email;
 
+    @BsonProperty("encryptBirthDate")
     @NonNull
     private String encryptBirthDate;
 
+    @BsonProperty("encryptPhoneNumber")
     @NonNull
     private String encryptPhoneNumber;
 
+    @BsonProperty("encryptPassword")
     @NonNull
     private String encryptPassword;
 
+    @BsonProperty("role")
     @NonNull
     private Role role;
 
+    @BsonProperty("isActive")
     @NonNull
     private Boolean isActive;
 
+    @BsonProperty("failCnt")
     @NonNull
     private short failCnt;
 
+    @BsonProperty("salt")
     @NonNull
     private String salt;
 
+    @BsonProperty("refreshToken")
     private String refreshToken;
 
     @Builder
-    public Member(String id, String memberId, String koName, String enName, String email, String encryptBirthDate, String encryptPhoneNumber, String encryptPassword, Role role, short failCnt, String salt, String refreshToken) {
-        this.id = id;
+    public Member(String memberId, String koName, String enName, String email,
+                  String encryptBirthDate, String encryptPhoneNumber,
+                  String encryptPassword, Role role, short failCnt,
+                  String salt, String refreshToken) {
+        this.id = new ObjectId();
         this.memberId = memberId;
         this.koName = koName;
         this.enName = enName;
@@ -75,18 +88,26 @@ public class Member {
     }
 
     public void updateCount() {
-        this.failCnt+=1;
+        this.failCnt += 1;
     }
 
     public void leave() {
         isActive = false;
     }
 
-    public void modify(ModifyMemberRequest modifyMemberRequest){
+    public void modify(ModifyMemberRequest modifyMemberRequest) {
         this.encryptPassword = modifyMemberRequest.getPassword();
         this.koName = modifyMemberRequest.getKoName();
         this.enName = modifyMemberRequest.getEnName();
         this.email = modifyMemberRequest.getEmail();
         this.encryptPhoneNumber = modifyMemberRequest.getPhoneNumber();
+    }
+
+    public String getIdtoString() {
+        return id != null ? id.toHexString() : null;
+    }
+
+    public void modifyPassword(String newPassword) {
+        this.encryptPassword = newPassword;
     }
 }
