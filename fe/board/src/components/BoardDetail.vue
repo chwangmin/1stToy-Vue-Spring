@@ -5,6 +5,7 @@
     size="lg"
     hide-footer
     @hidden="onHidden"
+    class="board-detail-modal"
   >
     <div class="post-detail">
       <!-- 게시글 정보 헤더 -->
@@ -29,36 +30,59 @@
 
       <!-- 게시글 내용 (수정 모드) -->
       <div v-if="isEditing" class="edit-form">
-        <b-form-group label="제목">
-          <b-form-input
-            v-model="editedPost.title"
-            required
-            placeholder="제목을 입력하세요"
-          ></b-form-input>
-        </b-form-group>
+        <b-form @submit.prevent="saveEdit">
+          <b-form-group label="제목">
+            <b-form-input
+              v-model="editedPost.title"
+              required
+              placeholder="제목을 입력하세요"
+            ></b-form-input>
+          </b-form-group>
 
-        <b-form-group label="내용" class="mt-3">
-          <b-form-textarea
-            v-model="editedPost.content"
-            rows="10"
-            required
-            placeholder="내용을 입력하세요"
-          ></b-form-textarea>
-        </b-form-group>
+          <b-form-group label="내용" class="mt-3">
+            <b-form-textarea
+              v-model="editedPost.content"
+              rows="10"
+              required
+              placeholder="내용을 입력하세요"
+            ></b-form-textarea>
+          </b-form-group>
 
-        <!-- 파일 업로드 -->
-        <b-form-group v-if="post.fileName" label="현재 파일" class="mt-3">
-          <div>{{ post.fileName }}</div>
-        </b-form-group>
+          <!-- 파일 업로드 -->
+          <b-form-group v-if="post.fileName" label="현재 파일" class="mt-3">
+            <div>{{ post.fileName }}</div>
+          </b-form-group>
 
-        <b-form-group label="새 파일 첨부" class="mt-3">
-          <b-form-file
-            v-model="editedPost.newFile"
-            placeholder="파일을 선택하거나 드래그하세요"
-            drop-placeholder="파일을 여기에 놓으세요"
-            browse-text="파일 선택"
-          ></b-form-file>
-        </b-form-group>
+          <b-form-group label="새 파일 첨부" class="mt-3">
+            <b-form-file
+              v-model="editedPost.newFile"
+              placeholder="파일을 선택하거나 드래그하세요"
+              drop-placeholder="파일을 여기에 놓으세요"
+              browse-text="파일 선택"
+            ></b-form-file>
+          </b-form-group>
+
+          <!-- 구분선 추가 -->
+          <hr class="my-3">
+
+          <!-- 저장/취소 버튼 -->
+          <div class="text-right mb-4">
+            <b-button
+              type="submit"
+              variant="success"
+              class="mr-2"
+            >
+              저장
+            </b-button>
+            <b-button
+              type="button"
+              variant="secondary"
+              @click="cancelEdit"
+            >
+              취소
+            </b-button>
+          </div>
+        </b-form>
       </div>
 
       <!-- 게시글 내용 (조회 모드) -->
@@ -70,32 +94,24 @@
         </div>
 
         <!-- 첨부 파일 -->
-        <div v-if="post.fileName" class="post-files mb-4">
+        <div v-if="post.filePath" class="post-files mb-4">
           <h6>첨부 파일:</h6>
-          <b-link @click="handleFileDownload">
-            <i class="fas fa-download"></i> {{ post.fileName }}
+          <b-link @click="handleFileDownload" class="file-link">
+            <i class="fas fa-file-download mr-1"></i> {{ post.fileName }}
           </b-link>
         </div>
-      </div>
 
-      <!-- 버튼 그룹 -->
-      <div class="text-right mt-3">
-        <template v-if="isEditing">
+        <!-- 구분선 추가 -->
+        <hr class="my-3">
+
+        <!-- 토큰이 있고 작성자가 같을 때만 수정/삭제 버튼 표시 -->
+        <div v-if="isAuthor" class="text-right mb-4">
           <b-button
-            variant="success"
-            class="mr-2"
-            @click="saveEdit"
+            variant="primary"
+            @click="startEdit"
           >
-            저장
+            수정
           </b-button>
-          <b-button
-            variant="secondary"
-            @click="cancelEdit"
-          >
-            취소
-          </b-button>
-        </template>
-        <template v-else>
           <b-button
             variant="danger"
             class="mr-2"
@@ -103,30 +119,41 @@
           >
             삭제
           </b-button>
-          <b-button
-            variant="primary"
-            class="mr-2"
-            @click="startEdit"
-          >
-            수정
-          </b-button>
-          <b-button
-            variant="secondary"
-            @click="closeModal"
-          >
-            닫기
-          </b-button>
-        </template>
+        </div>
+      </div>
+
+      <!-- 구분선 -->
+      <hr class="my-4">
+
+      <!-- 댓글 섹션 -->
+      <comment-section
+        :post-id="post.id"
+        :access-token="accessToken"
+      />
+
+      <!-- 버튼 그룹 -->
+      <div class="text-right mt-3">
+        <b-button
+          variant="secondary"
+          @click="closeModal"
+        >
+          닫기
+        </b-button>
       </div>
     </div>
   </b-modal>
 </template>
 
 <script>
-import { boardAPI } from '../api/api'
+import { boardAPI, commentAPI } from '../api/api'
+import CommentSection from './CommentSection.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'BoardDetail',
+  components: {
+    CommentSection
+  },
   props: {
     show: {
       type: Boolean,
@@ -145,10 +172,21 @@ export default {
         content: '',
         authorID: '',
         newFile: null
-      }
+      },
+      titleState: null,
+      contentState: null,
+      comments: [],
+      newComment: '',
+      commentState: null,
+      editingCommentId: null,
+      editedCommentContent: '',
+      replyingToId: null,
+      newReply: '',
+      replyState: null
     }
   },
   computed: {
+    ...mapGetters(['isAuthenticated']),
     showModal: {
       get() {
         return this.show
@@ -156,6 +194,28 @@ export default {
       set(value) {
         this.$emit('update:show', value)
       }
+    },
+    accessToken() {
+      return this.$store.state.accessToken
+    },
+    isAuthor() {
+      if (!this.accessToken) return false
+      
+      try {
+        // JWT 토큰에서 payload 추출
+        const payload = JSON.parse(atob(this.accessToken.split('.')[1]))
+        // 작성자 ID와 토큰의 _id 비교
+        return payload.memberId === this.post.authorID
+      } catch (error) {
+        console.error('토큰 파싱 실패:', error)
+        return false
+      }
+    }
+  },
+  watch: {
+    showModal(newVal) {
+      // showModal watcher에서 loadComments 제거
+      // CommentSection 컴포넌트가 자체적으로 처리할 것입니다
     }
   },
   methods: {
@@ -172,12 +232,22 @@ export default {
       this.$emit('hidden')
     },
     startEdit() {
+      if (!this.accessToken) {
+        this.$bvToast.toast('로그인이 필요한 기능입니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+        return
+      }
       this.editedPost = {
         title: this.post.title,
         content: this.post.content,
         authorID: this.post.authorID,
         newFile: null
       }
+      this.titleState = null
+      this.contentState = null
       this.isEditing = true
     },
     cancelEdit() {
@@ -191,25 +261,51 @@ export default {
     },
     async saveEdit() {
       try {
+        const formData = new FormData()
+        
         const boardData = {
-          title: this.editedPost.title,
-          content: this.editedPost.content,
+          title: this.editedPost.title.trim(),
+          content: this.editedPost.content.trim(),
           authorID: this.editedPost.authorID
         }
 
-        await this.$emit('save-edit', {
-          id: this.post.id,
-          boardData: boardData,
-          file: this.editedPost.newFile
-        })
+        // modifyBoardRequest를 JSON Blob으로 변환
+        formData.append('modifyBoardRequest', 
+          new Blob([JSON.stringify(boardData)], {
+            type: 'application/json'
+          })
+        )
+
+        // 새 파일이 있는 경우에만 추가
+        if (this.editedPost.newFile) {
+          formData.append('file', this.editedPost.newFile)
+        }
+
+        await boardAPI.updatePost(this.post.id, boardData, this.editedPost.newFile)
+        
+        // 게시글 상세 정보 다시 불러오기
+        const updatedPost = await boardAPI.getPost(this.post.id)
+        this.$emit('post-updated', updatedPost.boardDto)
         
         this.isEditing = false
-        this.closeModal()
       } catch (error) {
         console.error('수정 실패:', error)
+        this.$bvToast.toast('자신의 게시글만 수정할 수 있습니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
       }
     },
     handleDelete() {
+      if (!this.accessToken) {
+        this.$bvToast.toast('로그인이 필요한 기능입니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+        return
+      }
       this.$bvModal.msgBoxConfirm('정말 삭제하시겠습니까?', {
         title: '게시글 삭제',
         okVariant: 'danger',
@@ -253,6 +349,150 @@ export default {
           solid: true
         })
       }
+    },
+    async loadComments() {
+      try {
+        const response = await commentAPI.getComments(this.post.id)
+        this.comments = response.data
+      } catch (error) {
+        console.error('댓글 로드 실패:', error)
+      }
+    },
+    async submitComment() {
+      this.commentState = this.newComment.trim() !== ''
+      if (!this.commentState) return
+
+      try {
+        await commentAPI.createComment(this.post.id, this.newComment.trim())
+        this.newComment = ''
+        this.commentState = null
+        await this.loadComments()
+      } catch (error) {
+        this.$bvToast.toast('댓글 작성에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
+    },
+    startCommentEdit(comment) {
+      this.editingCommentId = comment.id
+      this.editedCommentContent = comment.content
+    },
+    cancelCommentEdit() {
+      this.editingCommentId = null
+      this.editedCommentContent = ''
+    },
+    async saveCommentEdit(commentId) {
+      if (!this.editedCommentContent.trim()) {
+        this.$bvToast.toast('댓글 내용을 입력해주세요.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+        return
+      }
+
+      try {
+        await commentAPI.modifyComment(
+          this.post.id,
+          commentId,
+          this.editedCommentContent.trim()
+        )
+        this.editingCommentId = null
+        this.editedCommentContent = ''
+        await this.loadComments()
+      } catch (error) {
+        this.$bvToast.toast('해당 댓글을 작성한 작성자가 아닙니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+      }
+    },
+    async deleteComment(commentId) {
+      try {
+        const confirmed = await this.$bvModal.msgBoxConfirm('정말 삭제하시겠습니까?', {
+          title: '댓글 삭제',
+          okVariant: 'danger',
+          okTitle: '삭제',
+          cancelTitle: '취소',
+          hideHeaderClose: false,
+          centered: true
+        })
+
+        if (confirmed) {
+          await commentAPI.deleteComment(this.post.id, commentId)
+          await this.loadComments()
+        }
+      } catch (error) {
+        this.$bvToast.toast('해당 댓글을 작성한 작성자가 아닙니다.', {
+          title: '알림',
+          variant: 'warning',
+          solid: true
+        })
+      }
+    },
+    showReplyForm(commentId) {
+      this.replyingToId = commentId
+      this.newReply = ''
+      this.replyState = null
+    },
+    cancelReply() {
+      this.replyingToId = null
+      this.newReply = ''
+      this.replyState = null
+    },
+    async submitReply(commentId) {
+      this.replyState = this.newReply.trim() !== ''
+      if (!this.replyState) return
+
+      try {
+        await commentAPI.createReply(
+          this.post.id,
+          commentId,
+          this.newReply.trim()
+        )
+        this.replyingToId = null
+        this.newReply = ''
+        this.replyState = null
+        
+        // 답글 목록 갱신
+        const comment = this.comments.find(c => c.id === commentId)
+        if (comment) {
+          const response = await commentAPI.getReplies(this.post.id, commentId)
+          this.$set(comment, 'replies', response.data)
+          // showReplies는 변경하지 않음 (true 유지)
+          if (!comment.showReplies) {
+            this.$set(comment, 'showReplies', true)
+          }
+        }
+      } catch (error) {
+        this.$bvToast.toast('답글 작성에 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
+    },
+    async loadReplies(commentId) {
+      try {
+        const comment = this.comments.find(c => c.id === commentId)
+        if (comment) {
+          if (!comment.showReplies) {
+            const response = await commentAPI.getReplies(this.post.id, commentId)
+            this.$set(comment, 'replies', response.data)
+          }
+          this.$set(comment, 'showReplies', !comment.showReplies)
+        }
+      } catch (error) {
+        console.error('답글 로드 실패:', error)
+        this.$bvToast.toast('답글을 불러오는데 실패했습니다.', {
+          title: '에러',
+          variant: 'danger',
+          solid: true
+        })
+      }
     }
   }
 }
@@ -283,5 +523,83 @@ export default {
 
 .edit-form {
   padding: 1rem 0;
+}
+
+.comments-section {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+}
+
+.comment-item {
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
+}
+
+.comment-content {
+  white-space: pre-line;
+}
+
+.comment-actions button {
+  font-size: 0.875rem;
+}
+
+.comment-form {
+  margin-top: 1rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.fas {
+  font-size: 12px;
+  width: 12px;
+  transition: transform 0.3s ease;
+}
+
+.fa-chevron-down {
+  transform: rotate(0deg);
+}
+
+.fa-chevron-right {
+  transform: rotate(0deg);
+}
+
+.reply-section {
+  margin-left: 1rem;
+}
+
+.replies-list {
+  border-left: 2px solid #eee;
+  padding-left: 1rem;
+}
+
+.reply-item {
+  border-bottom: 1px solid #f5f5f5;
+  padding: 0.5rem 0;
+}
+
+.file-link {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: #007bff;
+}
+
+.file-link:hover {
+  text-decoration: underline;
 }
 </style>

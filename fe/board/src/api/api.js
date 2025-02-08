@@ -73,19 +73,21 @@ export const authAPI = {
   },
   
   signup(userData) {
-    return axios.post('/auth/signup', userData)
+    return axios.post('/member/signup', userData)
   }
 }
 
 export const boardAPI = {
   // 게시글 목록 조회 (검색 포함)
-  getPosts: ({ keyword = '', page = 0, sort = 'CREATED_DESC' } = {}) => {
+  getPosts: ({ boardType = '', keyword = '', page = 0, sort = 'CREATED_DESC' } = {}) => {
     const params = new URLSearchParams()
     if (keyword) params.append('keyword', keyword)
     params.append('page', page)
     params.append('sort', sort)
     
-    return axios.get(`/board?${params.toString()}`)
+    // boardType이 'all'이거나 없으면 기본 엔드포인트 사용
+    const endpoint = boardType && boardType !== 'all' ? `/board/${boardType}` : '/board'
+    return axios.get(`${endpoint}?${params.toString()}`)
       .then(response => response.data)
   },
 
@@ -170,4 +172,61 @@ export const boardAPI = {
       responseType: 'blob'  // 파일 다운로드를 위한 responseType 설정
     })
   },
+}
+
+export const memberAPI = {
+  // 회원 정보 조회
+  getMemberInfo() {
+    return axios.get('/member/info')
+  },
+
+  // 비밀번호 찾기
+  findPassword(email) {
+    return axios.post('/member/find-pw', { email })
+  },
+
+  // 회원정보 수정 메소드 추가
+  modifyMemberInfo(memberData) {
+    return axios.put('/member/modify', memberData)
+  }
+}
+
+export const commentAPI = {
+  // 댓글 작성
+  createComment(boardId, content) {
+    return axios.post(`/board/${boardId}/comment`, {
+      content: content
+    })
+  },
+
+  // 댓글 조회
+  getComments(boardId, page = 0) {
+    return axios.get(`/board/${boardId}/comment`, {
+      params: { page }
+    })
+  },
+
+  // 댓글 수정
+  modifyComment(boardId, commentId, content) {
+    return axios.put(`/board/${boardId}/comment/${commentId}`, {
+      content: content
+    })
+  },
+
+  // 댓글 삭제
+  deleteComment(boardId, commentId) {
+    return axios.delete(`/board/${boardId}/comment/${commentId}`)
+  },
+
+  // 대댓글 작성
+  createReply(boardId, commentId, content) {
+    return axios.post(`/board/${boardId}/comment/${commentId}/reply`, {
+      content: content
+    })
+  },
+
+  // 대댓글 조회
+  getReplies(boardId, commentId) {
+    return axios.get(`/board/${boardId}/comment/${commentId}/reply`)
+  }
 }

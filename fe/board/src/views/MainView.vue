@@ -1,5 +1,27 @@
 <template>
   <b-container class="mt-4">
+    <!-- 게시판 타입 선택 탭 수정 -->
+    <b-nav tabs class="mb-4">
+      <b-nav-item 
+        :to="'/'"
+        :active="boardType === 'all'"
+      >
+        전체 게시판
+      </b-nav-item>
+      <b-nav-item 
+        :to="'/open'"
+        :active="boardType === 'open'"
+      >
+        일반 게시판
+      </b-nav-item>
+      <b-nav-item 
+        :to="'/question'"
+        :active="boardType === 'question'"
+      >
+        퀴즈 게시판
+      </b-nav-item>
+    </b-nav>
+
     <!-- 검색과 정렬 기능 -->
     <b-row class="mb-3">
       <b-col sm="12" md="6" lg="4">
@@ -72,7 +94,7 @@
         <!-- 버튼 그룹 -->
         <div class="text-right mt-3 d-flex justify-content-between">
           <!-- 데이터 불러오기 버튼과 파일 입력 -->
-          <div>
+          <div v-if="isAuthenticated">
             <input
               type="file"
               ref="fileInput"
@@ -90,7 +112,11 @@
           </div>
           
           <!-- 글쓰기 버튼 -->
-          <b-button variant="primary" @click="writePost">
+          <b-button 
+            v-if="isAuthenticated"
+            variant="primary" 
+            @click="writePost"
+          >
             글쓰기
           </b-button>
         </div>
@@ -104,6 +130,7 @@
       @hidden="onModalHidden"
       @save-edit="saveEdit"
       @delete-post="deletePost"
+      @post-updated="handlePostUpdate"
     />
   </b-container>
 </template>
@@ -111,16 +138,38 @@
 <script>
 import { boardAPI } from '../api/api'
 import BoardDetail from '../components/BoardDetail.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'MainView',
   components: {
     BoardDetail
   },
+  props: {
+    boardType: {
+      type: String,
+      default: 'all'  // 기본값을 'all'로 변경
+    }
+  },
   data() {
     return {
       isLoading: false,
       fields: [
+        { 
+          key: 'boardType', 
+          label: '게시판 종류', 
+          sortable: true,
+          formatter: (value) => {
+            switch(value) {
+              case 'QUESTION':
+                return '질문'
+              case 'OPEN':
+                return '일반'
+              default:
+                return value
+            }
+          }
+        },
         { key: 'title', label: '제목', sortable: true },
         { key: 'authorID', label: '작성자', sortable: true },
         { key: 'createdDate', label: '작성일', sortable: true },
@@ -163,6 +212,7 @@ export default {
       try {
         this.isLoading = true
         const response = await boardAPI.getPosts({
+          boardType: this.boardType === 'all' ? '' : this.boardType,  // 전체 게시판일 경우 빈 문자열 전송
           keyword: this.searchKeyword,
           page: this.currentPage - 1,
           sort: this.selectedSort
@@ -183,26 +233,11 @@ export default {
     },
     async viewPost(post) {
       try {
-        // 1. 현재 게시글 데이터로 모달 먼저 열기
-        this.selectedPost = { ...post }
+        await boardAPI.increaseViews(post.id)
+        const detailResponse = await boardAPI.getPost(post.id)
+        this.selectedPost = detailResponse.boardDto
         this.showModal = true
-        
-        // 2. 백그라운드에서 조회수 증가와 상세 정보 조회
-        const [_, detailResponse] = await Promise.all([
-          boardAPI.increaseViews(post.id),
-          boardAPI.getPost(post.id)
-        ])
-        
-        // 3. 모달이 열려있는 상태에서만 상세 정보 업데이트
-        if (this.showModal) {
-          this.selectedPost = detailResponse.boardDto
-          
-          // 4. posts 배열에서 해당 게시글 찾아서 조회수 업데이트
-          const index = this.posts.findIndex(p => p.id === post.id)
-          if (index !== -1) {
-            this.posts[index].views = detailResponse.boardDto.views
-          }
-        }
+        await this.fetchPosts()
       } catch (error) {
         console.error('게시글 조회 실패:', error)
         this.$bvToast.toast('게시글을 불러오는데 실패했습니다.', {
@@ -213,7 +248,12 @@ export default {
       }
     },
     writePost() {
-      this.$router.push('/write')
+      // 전체 게시판에서는 일반 게시판으로 글쓰기 이동
+      const writeType = this.boardType === 'all' ? 'open' : this.boardType
+      this.$router.push({
+        path: '/write',
+        query: { type: writeType }
+      })
     },
     onModalHidden() {
       this.selectedPost = {
@@ -249,7 +289,7 @@ export default {
         })
       } catch (error) {
         console.error('게시글 삭제 실패:', error)
-        this.$bvToast.toast('게시글 삭제에 실패했습니다.', {
+        this.$bvToast.toast('해당 글을 작성한 작성자가 아닙니다.', {
           title: '에러',
           variant: 'danger',
           solid: true
@@ -295,12 +335,20 @@ export default {
         event.target.value = '' // 파일 입력 초기화
       }
     },
+    async handlePostUpdate(updatedPost) {
+      this.selectedPost = updatedPost
+      // 전체 게시글 목록 새로고침
+      await this.fetchPosts()
+    },
     async saveEdit({ id, boardData, file }) {
       try {
-        // 게시글 수정 API 호출
-        await boardAPI.updatePost(id, boardData, file)
+        await boardAPI.updatePost(this.boardType, id, boardData, file)
         
-        // 수정 성공 후 전체 게시글 목록을 다시 불러옴
+        // 게시글 상세 정보 다시 불러오기
+        const updatedPost = await boardAPI.getPost(id)
+        this.selectedPost = updatedPost.boardDto
+        
+        // 전체 게시글 목록 새로고침
         await this.fetchPosts()
         
         this.$bvToast.toast('게시글이 수정되었습니다.', {
@@ -310,7 +358,7 @@ export default {
         })
       } catch (error) {
         console.error('게시글 수정 실패:', error)
-        this.$bvToast.toast('게시글 수정에 실패했습니다.', {
+        this.$bvToast.toast('해당 글을 작성한 작성자가 아닙니다.', {
           title: '에러',
           variant: 'danger',
           solid: true
@@ -322,6 +370,7 @@ export default {
       try {
         this.isLoading = true // 로딩 상태 추가
         const response = await boardAPI.getPosts({
+          boardType: this.boardType,
           keyword: this.searchKeyword
         })
         this.posts = response.boards
@@ -340,35 +389,12 @@ export default {
     },
     // 페이지 변경 핸들러 수정
     async handlePageChange(page) {
-      try {
-        this.isLoading = true
-        const response = await boardAPI.getPosts({
-          keyword: this.searchKeyword,
-          page: page - 1
-        })
-        
-        // 데이터 업데이트
-        this.posts = response.boards
-        this.currentPage = page
-        this.maxBoardNum = response.maxBoardNum
-        
-        // URL 업데이트 (새로고침 없이)
-        const query = { ...this.$route.query, page: page }
-        this.$router.push({
-          path: this.$route.path,
-          query: query
-        }).catch(() => {})
-        
-      } catch (error) {
-        console.error('페이지 로딩 실패:', error)
-        this.$bvToast.toast('페이지를 불러오는데 실패했습니다.', {
-          title: '에러',
-          variant: 'danger',
-          solid: true
-        })
-      } finally {
-        this.isLoading = false
-      }
+      // URL 업데이트만 수행 (fetchPosts는 route watcher에서 처리)
+      const query = { ...this.$route.query, page: page }
+      this.$router.push({
+        path: this.$route.path,
+        query: query
+      }).catch(() => {})
     },
     // 정렬 변경 핸들러 추가
     async handleSortChange() {
@@ -381,18 +407,31 @@ export default {
       await this.fetchPosts()
     }
   },
+  computed: {
+    ...mapGetters(['isAuthenticated']),
+  },
   // URL 파라미터 감시 수정
   watch: {
-    '$route.query': {
+    '$route': {
       immediate: true,
       deep: true,
-      handler(query) {
-        if (query.page) {
-          this.currentPage = parseInt(query.page)
+      handler(to, from) {
+        // 페이지 설정
+        if (to.query.page) {
+          this.currentPage = parseInt(to.query.page)
+        } else {
+          this.currentPage = 1
         }
-        if (query.sort) {
-          this.selectedSort = query.sort
+        // 정렬 설정
+        if (to.query.sort) {
+          this.selectedSort = to.query.sort
         }
+        
+        // boardType이 변경되면 페이지를 1로 초기화
+        if (!from || to.path !== from.path) {
+          this.currentPage = 1
+        }
+        
         this.fetchPosts()
       }
     }
