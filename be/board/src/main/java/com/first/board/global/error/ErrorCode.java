@@ -50,6 +50,9 @@ public enum ErrorCode {
     // FileReader
     FILE_READ_ERROR(HttpStatus.BAD_GATEWAY, "F-001", "파일을 읽을 수 없습니다."),
     INVALID_JSON_FORMAT(HttpStatus.BAD_GATEWAY, "F-002", "파일 요청이 JSON 이지만, JSON 형식이 아닙니다."),
+
+    // rocketchat
+    ROKCKET_CHAT_NOT_FOUND(HttpStatus.BAD_GATEWAY, "R-001", "해당 rocket chat은 존재하지 않습니다."),
     ;
 
     ErrorCode(HttpStatus httpStatus, String errorCode, String message) {

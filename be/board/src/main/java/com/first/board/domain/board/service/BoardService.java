@@ -13,7 +13,8 @@ import com.first.board.domain.board.type.BoardType;
 import com.first.board.domain.board.type.SortType;
 import com.first.board.domain.member.adaptor.MemberAdaptor;
 import com.first.board.domain.member.entity.Member;
-import com.first.board.external.rocketchat.service.RocketChatService;
+import com.first.board.external.rocketchat.feign.RocketChatAPI;
+import com.first.board.external.rocketchat.service.RocketChatAPIService;;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.BusinessException;
 import com.first.board.global.json.ReadJsonFile;
@@ -44,7 +45,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardAdaptor boardAdaptor;
     private final ReadJsonFile readJsonFile;
-    private final RocketChatService rocketChatService;
+    private final RocketChatAPIService rocketChatAPIService;
     private final MemberAdaptor memberAdaptor;
 
     // @Transactional
@@ -58,7 +59,7 @@ public class BoardService {
 
         if(boardCreateRequest.getBoardType().isQuestion()){
             Member member = memberAdaptor.findByMemberId(memberId);
-            rocketChatService.sendMessage(boardCreateRequest.getTitle(), member.getKoName());
+            rocketChatAPIService.sendMessage(boardCreateRequest.getTitle(), member.getKoName());
         }
 
         Board board = boardCreateRequest.toEntity(memberId, realFileName, UUIDFileName);

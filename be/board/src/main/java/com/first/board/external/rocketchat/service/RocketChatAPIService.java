@@ -12,7 +12,7 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class RocketChatService {
+public class RocketChatAPIService {
     private final RocketChatAPI rocketChatAPI;
 
     private static final String DEFAULT_EMOJI = ":thinking:";
