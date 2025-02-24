@@ -35,7 +35,7 @@ public class RocketChatController {
 
     @Tag(name = "rocket-chat")
     @Operation(summary = "유저 알람 수정", description = "유저의 알람을 수정합니다.")
-    @PostMapping
+    @PutMapping
     public ResponseEntity<?> modifyRocketChat(@RequestBody ModifyRocketChatRequest modifyRocketChatRequest) {
         rocketChatService.modifyRocketChat(modifyRocketChatRequest);
         return ResponseEntity.ok().build();
