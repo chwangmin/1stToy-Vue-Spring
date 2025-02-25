@@ -21,8 +21,8 @@ public class RocketChatController {
     @Tag(name = "rocket-chat")
     @Operation(summary = "유저 알람 확인", description = "유저의 알람을 확인합니다.")
     @GetMapping
-    public ResponseEntity<GetRocketChatsResponse> getRocketChat(@RequestParam int userId) {
-        return ResponseEntity.ok(rocketChatService.getRocketChats(userId));
+    public ResponseEntity<GetRocketChatsResponse> getRocketChat(@RequestParam String XUserId) {
+        return ResponseEntity.ok(rocketChatService.getRocketChats(XUserId));
     }
 
     @Tag(name = "rocket-chat")

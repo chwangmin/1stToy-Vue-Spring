@@ -28,8 +28,8 @@ public class RocketChatService {
         taskManager.addTask(rocketChat);
     }
 
-    public GetRocketChatsResponse getRocketChats(int userId) {
-        List<RocketChat> rocketChats = rocketChatRepository.findByUserId(userId);
+    public GetRocketChatsResponse getRocketChats(String XUserId) {
+        List<RocketChat> rocketChats = rocketChatRepository.findByXUserId(XUserId);
 
         List<RocketChatDto> rocketChatDtos = new ArrayList<>();
 
