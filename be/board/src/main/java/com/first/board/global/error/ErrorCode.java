@@ -52,7 +52,10 @@ public enum ErrorCode {
     INVALID_JSON_FORMAT(HttpStatus.BAD_GATEWAY, "F-002", "파일 요청이 JSON 이지만, JSON 형식이 아닙니다."),
 
     // rocketchat
-    ROKCKET_CHAT_NOT_FOUND(HttpStatus.BAD_GATEWAY, "R-001", "해당 rocket chat은 존재하지 않습니다."),
+    ROCKET_CHAT_NOT_FOUND(HttpStatus.BAD_GATEWAY, "R-001", "해당 rocket chat은 존재하지 않습니다."),
+
+    // cron 형식
+    CRON_HAVE_TO_TIME(HttpStatus.BAD_GATEWAY, "CR-001", "cron 표현식에 Time이 필요합니다.")
     ;
 
     ErrorCode(HttpStatus httpStatus, String errorCode, String message) {

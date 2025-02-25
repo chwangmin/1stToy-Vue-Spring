@@ -1,5 +1,6 @@
 package com.first.board.domain.rocketchat.service;
 
+import com.first.board.batch.service.TaskManager;
 import com.first.board.domain.rocketchat.adaptor.RocketChatAdaptor;
 import com.first.board.domain.rocketchat.dto.RocketChatDto;
 import com.first.board.domain.rocketchat.dto.request.CreateRocketChatRequest;
@@ -19,10 +20,12 @@ import java.util.List;
 public class RocketChatService {
     private final RocketChatRepository rocketChatRepository;
     private final RocketChatAdaptor rocketChatAdaptor;
+    private final TaskManager taskManager;
 
     public void createRocketChat(CreateRocketChatRequest createRocketChatRequest) {
         RocketChat rocketChat = createRocketChatRequest.toEntity();
-        rocketChatRepository.save(rocketChat);
+        rocketChat = rocketChatRepository.save(rocketChat);
+        taskManager.addTask(rocketChat);
     }
 
     public GetRocketChatsResponse getRocketChats(int userId) {
@@ -41,11 +44,14 @@ public class RocketChatService {
 
     public void modifyRocketChat(ModifyRocketChatRequest modifyRocketChatRequest) {
         RocketChat rocketChat = modifyRocketChatRequest.toEntity();
-        rocketChatRepository.update(rocketChat);
+        taskManager.removeTask(rocketChat);
+        rocketChatRepository.update(modifyRocketChatRequest);
+        taskManager.addTask(rocketChat);
     }
 
     public void deleteRocketChat(DeleteRocketChatReqest deleteRocketChatRequest) {
-        rocketChatAdaptor.findById(deleteRocketChatRequest.getRocketChatId()); // valid 확인
+        RocketChat rocketChat = rocketChatAdaptor.findById(deleteRocketChatRequest.getRocketChatId()); // valid 확인
+        taskManager.removeTask(rocketChat);
         rocketChatRepository.deleteById(deleteRocketChatRequest.getRocketChatId());
     }
 }

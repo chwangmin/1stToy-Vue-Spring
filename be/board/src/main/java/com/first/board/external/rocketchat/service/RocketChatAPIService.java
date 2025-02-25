@@ -10,18 +10,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+import static com.first.board.external.rocketchat.constant.RocketChatConstant.*;
+
 @Service
 @RequiredArgsConstructor
 public class RocketChatAPIService {
     private final RocketChatAPI rocketChatAPI;
 
-    private static final String DEFAULT_EMOJI = ":thinking:";
-    private static final String GREETING_EMOJI = ":raising_hand: ";
-    private static final String HELP_MESSAGE = "님의 궁금증을 해결해주세요!";
-    private static final String VIEW_DETAILS_LINK = " - [[View Details]](http://lutesinfo.shop/question)";
+    @Value("${spring.rocketchat.authtoken}")
+    private String authToken;
 
-    private static final String ATTACH_COLOR = "#007bff";
-    private static final String MESSAGE_HEADER = "질문 : ";
+    @Value("${spring.rocketchat.userid}")
+    private String userId;
 
     @Value("${spring.rocketchat.roomid}")
     private String rid;
@@ -41,7 +41,7 @@ public class RocketChatAPIService {
                         .build())
                 .build();
 
-        rocketChatAPI.sendMessage(chatMessage);
+        rocketChatAPI.sendMessage(chatMessage, authToken, userId);
     }
 }
 

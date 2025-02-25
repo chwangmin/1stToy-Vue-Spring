@@ -1,6 +1,9 @@
 package com.first.board.domain.rocketchat.repository;
 
+import com.first.board.domain.rocketchat.dto.request.ModifyRocketChatRequest;
 import com.first.board.domain.rocketchat.entity.RocketChat;
+import com.first.board.domain.rocketchat.entity.ScheduledMessageStatus;
+import com.first.board.global.mongodb.MongoUtil;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -19,6 +22,7 @@ import java.util.Optional;
 public class RocketChatRepository {
     private final MongoDatabase mongoDB;
     private static final String COLLECTION_NAME = "rocketchat";
+    private final MongoUtil mongoUtil;
 
     private MongoCollection<RocketChat> getCollection() { return mongoDB.getCollection(COLLECTION_NAME, RocketChat.class); }
 
@@ -28,36 +32,48 @@ public class RocketChatRepository {
         return getCollection().find(filter).into(new ArrayList<RocketChat>());
     }
 
-    public void save(RocketChat rocketChat) {
+    public RocketChat save(RocketChat rocketChat) {
         getCollection().insertOne(rocketChat);
+
+        return rocketChat;
     }
 
-    public Optional<RocketChat> findById(ObjectId id) {
-        return Optional.ofNullable(getCollection().find(Filters.eq("_id", id)).first());
+    public Optional<RocketChat> findById(String id) {
+        ObjectId objectId = mongoUtil.ConvertStringToObjectId(id);
+        return Optional.ofNullable(getCollection().find(Filters.eq("_id", objectId)).first());
     }
 
-    public void update(RocketChat rocketChat) {
-        Bson filter = Filters.eq("_id", rocketChat.getId());
+    public RocketChat update(ModifyRocketChatRequest modifyRocketChatRequest) {
+        ObjectId objectId = mongoUtil.ConvertStringToObjectId(modifyRocketChatRequest.getId());
+        Bson filter = Filters.eq("_id", objectId);
 
         Bson updates = Updates.combine(
-                Updates.set("pk", rocketChat.getPk()),
-                Updates.set("memberId", rocketChat.getMemberId()),
-                Updates.set("week", rocketChat.getWeek()),
-                Updates.set("loop", rocketChat.getLoop()),
-                Updates.set("time", rocketChat.getTime()),
-                Updates.set("icon", rocketChat.getIcon()),
-                Updates.set("message", rocketChat.getMessage()),
-                Updates.set("isGpt", rocketChat.getIsGpt()),
-                Updates.set("XAuthToken", rocketChat.getXAuthToken()),
-                Updates.set("XUserId", rocketChat.getXUserId()),
-                Updates.set("isConnectable", rocketChat.getIsConnectable())
+                Updates.set("memberId", modifyRocketChatRequest.getMemberId()),
+                Updates.set("week", modifyRocketChatRequest.getWeek()),
+                Updates.set("date", modifyRocketChatRequest.getDate()),
+                Updates.set("time", modifyRocketChatRequest.getTime()),
+                Updates.set("icon", modifyRocketChatRequest.getIcon()),
+                Updates.set("message", modifyRocketChatRequest.getMessage()),
+                Updates.set("isGpt", modifyRocketChatRequest.getIsGpt()),
+                Updates.set("XAuthToken", modifyRocketChatRequest.getXAuthToken()),
+                Updates.set("XUserId", modifyRocketChatRequest.getXUserId()),
+                Updates.set("status", modifyRocketChatRequest.getStatus())
         );
 
         getCollection().updateOne(filter, updates);
+
+        return getCollection().find(filter).first();
     }
 
 
-    public void deleteById(ObjectId rocketChatId) {
-        getCollection().deleteOne(Filters.eq("_id", rocketChatId));
+    public void deleteById(String id) {
+        ObjectId objectId = mongoUtil.ConvertStringToObjectId(id);
+        getCollection().deleteOne(Filters.eq("_id", objectId));
+    }
+
+    public List<RocketChat> findAllByStatus(ScheduledMessageStatus status) {
+        Bson filter = Filters.eq("status", status);
+
+        return getCollection().find(filter).into(new ArrayList<RocketChat>());
     }
 }

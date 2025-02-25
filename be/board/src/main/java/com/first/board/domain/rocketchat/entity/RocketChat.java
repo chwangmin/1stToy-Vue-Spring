@@ -4,7 +4,10 @@ import lombok.*;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,20 +16,16 @@ public class RocketChat {
     @BsonId
     private ObjectId id;
 
-    @BsonProperty("pk")
-    private ObjectId pk;
-
     @BsonProperty("memberId")
     @NonNull
     private Integer memberId;
 
     @BsonProperty("week")
     @NonNull
-    private Short week;
+    private List<WeekType> week;
 
-    @BsonProperty("loop")
-    @NonNull
-    private Boolean loop;
+    @BsonProperty("date")
+    private LocalDate date;
 
     @BsonProperty("time")
     @NonNull
@@ -56,15 +55,22 @@ public class RocketChat {
     @NonNull
     private Boolean isConnectable;
 
+    @BsonProperty("status")
+    @NonNull
+    private ScheduledMessageStatus status;
+
+    @BsonProperty("roomId")
+    @NonNull
+    private String roomId;
+
     @Builder
-    public RocketChat(Integer memberId, Short week, Boolean loop,
+    public RocketChat(Integer memberId, List<WeekType> week, LocalDate date,
                       LocalTime time, String icon, String message,
-                      Boolean isGpt, String XAuthToken, String XUserId) {
+                      Boolean isGpt, String XAuthToken, String XUserId, ScheduledMessageStatus status, String roomId) {
         this.id = new ObjectId();
-        this.pk = new ObjectId();
         this.memberId = memberId;
         this.week = week;
-        this.loop = loop;
+        this.date = date;
         this.time = time;
         this.icon = icon;
         this.message = message;
@@ -72,13 +78,11 @@ public class RocketChat {
         this.XAuthToken = XAuthToken;
         this.XUserId = XUserId;
         this.isConnectable = true;
+        this.status = status;
+        this.roomId = roomId;
     }
 
     public String getIdtoString() {
         return id != null ? id.toHexString() : null;
-    }
-
-    public String getPktoString() {
-        return pk != null ? pk.toHexString() : null;
     }
 }
