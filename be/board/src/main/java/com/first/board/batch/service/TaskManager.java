@@ -25,6 +25,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.first.board.external.rocketchat.constant.RocketChatConstant.*;
 
@@ -134,5 +136,14 @@ public class TaskManager {
 
         // cron 표현식 생성: 초 분 시 일 월 요일
         return String.format("%d %d %d ? * %s", second, minute, hour, dayOfWeek);
+    }
+
+    public StringBuilder getAllTask() {
+        StringBuilder sb = new StringBuilder();
+        AtomicInteger i = new AtomicInteger(1);
+        scheduledTasks.forEach((key, value) -> {
+            sb.append(i.getAndIncrement()).append(": ").append(value.getDelay(TimeUnit.MINUTES)).append("분 후 시작\n");
+        });
+        return sb;
     }
 }

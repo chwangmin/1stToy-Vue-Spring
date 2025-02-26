@@ -48,4 +48,11 @@ public class RocketChatController {
         rocketChatService.deleteRocketChat(deleteRocketChatRequest);
         return ResponseEntity.ok().build();
     }
+
+    @Tag(name = "rocket-chat")
+    @Operation(summary = "모든 task 예약 rocketChat message 확인", description = "실제 task에 있는 모든 예약 rocketChat messaget 확인")
+    @GetMapping("/all")
+    public ResponseEntity<?> allGetRocketChat() {
+        return ResponseEntity.ok(rocketChatService.allGetRocketChat());
+    }
 }

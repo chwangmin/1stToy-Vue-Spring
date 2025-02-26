@@ -54,4 +54,8 @@ public class RocketChatService {
         taskManager.removeTask(rocketChat);
         rocketChatRepository.deleteById(deleteRocketChatRequest.getRocketChatId());
     }
+
+    public StringBuilder allGetRocketChat() {
+        return taskManager.getAllTask();
+    }
 }
