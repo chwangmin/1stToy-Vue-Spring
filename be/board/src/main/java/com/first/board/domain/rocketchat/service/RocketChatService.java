@@ -48,8 +48,10 @@ public class RocketChatService {
     public void modifyRocketChat(ModifyRocketChatRequest modifyRocketChatRequest) {
         RocketChat rocketChat = modifyRocketChatRequest.toEntity();
         rocketChat.setId(mongoUtil.ConvertStringToObjectId(modifyRocketChatRequest.getId()));
+
         taskManager.removeTask(rocketChat);
-        rocketChatRepository.update(modifyRocketChatRequest);
+
+        rocketChat = rocketChatRepository.update(modifyRocketChatRequest);
         taskManager.addTask(rocketChat);
     }
 

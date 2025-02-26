@@ -81,6 +81,10 @@ public class TaskManager {
     public void removeTask(RocketChat rocketChat) {
         Map<String, ScheduledFuture<?>> myScheduledTasks = scheduledTasks.get(rocketChat.getXUserId());
 
+        if(myScheduledTasks == null || myScheduledTasks.isEmpty()) {
+            return;
+        }
+
         myScheduledTasks.get(rocketChat.getIdtoString()).cancel(true);
         myScheduledTasks.remove(rocketChat.getIdtoString());
     }
