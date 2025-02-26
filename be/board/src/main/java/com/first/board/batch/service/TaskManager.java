@@ -6,6 +6,7 @@ import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.entity.ScheduledMessageStatus;
 import com.first.board.domain.rocketchat.entity.WeekType;
 import com.first.board.domain.rocketchat.repository.RocketChatRepository;
+import com.first.board.external.llm.service.PerplexityAPIService;
 import com.first.board.external.rocketchat.service.RocketChatAPIService;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.BusinessException;
@@ -39,6 +40,7 @@ public class TaskManager {
     private final RocketChatAdaptor rocketChatAdaptor;
     private final RocketChatAPIService rocketChatAPIService;
     private final RocketChatRepository rocketChatRepository;
+    private final PerplexityAPIService perplexityAPIService;
 
     private final Map<String, Map<String, ScheduledFuture<?>>> scheduledTasks = new HashMap<>();
 
@@ -79,7 +81,7 @@ public class TaskManager {
     public void removeTask(RocketChat rocketChat) {
         Map<String, ScheduledFuture<?>> myScheduledTasks = scheduledTasks.get(rocketChat.getXUserId());
 
-        if(myScheduledTasks == null || myScheduledTasks.isEmpty()) {
+        if (myScheduledTasks == null || myScheduledTasks.isEmpty()) {
             return;
         }
 
@@ -90,7 +92,7 @@ public class TaskManager {
     private Runnable scheduledSend(RocketChat rocketChat) {
         return () -> {
             if (rocketChat.getIsGpt()) {
-                //todo chatGPT 연결 필요
+                rocketChat.setMessage(perplexityAPIService.sendPrompt(rocketChat.getMessage()).getContent());
             }
 
             rocketChatAPIService.sendScheduledMessage(rocketChat);

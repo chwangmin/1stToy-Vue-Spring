@@ -1,4 +1,4 @@
-package com.first.board.external.rocketchat.feign;
+package com.first.board.external;
 
 import feign.RequestTemplate;
 import lombok.RequiredArgsConstructor;

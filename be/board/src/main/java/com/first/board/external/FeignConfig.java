@@ -1,6 +1,5 @@
 package com.first.board.external;
 
-import com.first.board.external.rocketchat.feign.RequestInterceptor;
 import feign.Logger;
 import feign.Retryer;
 import org.springframework.cloud.openfeign.EnableFeignClients;
