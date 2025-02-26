@@ -17,7 +17,6 @@ import java.util.List;
 public class CreateRocketChatRequest {
     private Integer memberId;
     private List<WeekType> week;
-    private Boolean loop;
     private LocalDate date;
     private LocalTime time;
     private String icon;
