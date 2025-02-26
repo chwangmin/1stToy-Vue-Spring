@@ -1,6 +1,7 @@
 package com.first.board.batch.service;
 
 import com.first.board.domain.rocketchat.adaptor.RocketChatAdaptor;
+import com.first.board.domain.rocketchat.dto.response.GetNumberTodayResponse;
 import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.entity.ScheduledMessageStatus;
 import com.first.board.domain.rocketchat.entity.WeekType;
@@ -162,10 +163,12 @@ public class TaskManager {
         return sb;
     }
 
-    public Integer checkNumberTodayRocketChat(String xUserId) {
+    public GetNumberTodayResponse checkNumberTodayRocketChat(String xUserId) {
         if (scheduledTasks.containsKey(xUserId)) {
-            return scheduledTasks.get(xUserId).size();
+            return GetNumberTodayResponse.builder()
+                    .count(scheduledTasks.get(xUserId).size()).build();
         }
-        return 0;
+        return GetNumberTodayResponse.builder()
+                .count(0).build();
     }
 }

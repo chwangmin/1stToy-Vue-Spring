@@ -6,6 +6,7 @@ import com.first.board.domain.rocketchat.dto.RocketChatDto;
 import com.first.board.domain.rocketchat.dto.request.CreateRocketChatRequest;
 import com.first.board.domain.rocketchat.dto.request.DeleteRocketChatReqest;
 import com.first.board.domain.rocketchat.dto.request.ModifyRocketChatRequest;
+import com.first.board.domain.rocketchat.dto.response.GetNumberTodayResponse;
 import com.first.board.domain.rocketchat.dto.response.GetRocketChatsResponse;
 import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.repository.RocketChatRepository;
@@ -59,7 +60,7 @@ public class RocketChatService {
         return taskManager.getAllTask();
     }
 
-    public Integer checkNumberTodayRocketChat(String XUserId) {
+    public GetNumberTodayResponse checkNumberTodayRocketChat(String XUserId) {
         return taskManager.checkNumberTodayRocketChat(XUserId);
     }
 }
