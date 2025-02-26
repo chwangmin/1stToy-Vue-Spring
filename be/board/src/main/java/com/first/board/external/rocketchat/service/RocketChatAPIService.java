@@ -1,5 +1,6 @@
 package com.first.board.external.rocketchat.service;
 
+import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.external.rocketchat.dto.Attachment;
 import com.first.board.external.rocketchat.dto.Message;
 import com.first.board.external.rocketchat.dto.request.RocketChatMessageRequest;
@@ -42,6 +43,19 @@ public class RocketChatAPIService {
                 .build();
 
         rocketChatAPI.sendMessage(chatMessage, authToken, userId);
+    }
+
+    public void sendScheduledMessage(RocketChat rocketChat) {
+        RocketChatMessageRequest chatMessage = RocketChatMessageRequest.builder()
+                .message(Message.builder()
+                        .rid(rocketChat.getRoomId())
+                        .msg(rocketChat.getMessage())
+                        .emoji(rocketChat.getIcon().isEmpty() ? DEFAULT_EMOJI : rocketChat.getIcon())
+                        .build())
+                .build();
+
+
+        rocketChatAPI.sendScheduledMessage(chatMessage, rocketChat.getXAuthToken(), rocketChat.getXUserId());
     }
 }
 

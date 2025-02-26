@@ -6,10 +6,7 @@ import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.entity.ScheduledMessageStatus;
 import com.first.board.domain.rocketchat.entity.WeekType;
 import com.first.board.domain.rocketchat.repository.RocketChatRepository;
-import com.first.board.external.rocketchat.dto.Attachment;
-import com.first.board.external.rocketchat.dto.Message;
-import com.first.board.external.rocketchat.dto.request.RocketChatMessageRequest;
-import com.first.board.external.rocketchat.feign.RocketChatAPI;
+import com.first.board.external.rocketchat.service.RocketChatAPIService;
 import com.first.board.global.error.ErrorCode;
 import com.first.board.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +22,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.first.board.external.rocketchat.constant.RocketChatConstant.*;
 
 @Slf4j
 @Service
@@ -39,7 +37,7 @@ public class TaskManager {
     @Qualifier("taskScheduler")
     private final TaskScheduler taskScheduler;
     private final RocketChatAdaptor rocketChatAdaptor;
-    private final RocketChatAPI rocketChatAPI;
+    private final RocketChatAPIService rocketChatAPIService;
     private final RocketChatRepository rocketChatRepository;
 
     private final Map<String, Map<String, ScheduledFuture<?>>> scheduledTasks = new HashMap<>();
@@ -95,21 +93,7 @@ public class TaskManager {
                 //todo chatGPT 연결 필요
             }
 
-            RocketChatMessageRequest chatMessage = RocketChatMessageRequest.builder()
-                    .message(Message.builder()
-                            .rid(rocketChat.getRoomId())
-                            .msg(rocketChat.getMessage())
-                            .emoji(rocketChat.getIcon().isEmpty() ? DEFAULT_EMOJI : rocketChat.getIcon())
-                            .attachments(Collections.singletonList(
-                                    Attachment.builder()
-                                            .color(ATTACH_COLOR)
-                                            .text(MESSAGE_HEADER)
-                                            .build()
-                            ))
-                            .build())
-                    .build();
-
-            rocketChatAPI.sendScheduledMessage(chatMessage, rocketChat.getXAuthToken(), rocketChat.getXUserId());
+            rocketChatAPIService.sendScheduledMessage(rocketChat);
 
             if (rocketChat.getWeek().isEmpty()) {
                 rocketChat.setStatus(ScheduledMessageStatus.COMPLETED);

@@ -8,4 +8,6 @@ public class RocketChatConstant {
 
     public static final String ATTACH_COLOR = "#007bff";
     public static final String MESSAGE_HEADER = "질문 : ";
+
+    public static final String THIS_IS_SPRING_MESSAGE = "로캣챗 예약 알림 메시지 입니다.";
 }
