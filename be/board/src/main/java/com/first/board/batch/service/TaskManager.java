@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 
@@ -57,7 +58,9 @@ public class TaskManager {
             scheduledTasks.put(mapKey,
                     taskScheduler.schedule(scheduledSend(rocketChat),
                             Instant.from(LocalDateTime
-                                    .of(rocketChat.getDate(), rocketChat.getTime()))));
+                                    .of(rocketChat.getDate(), rocketChat.getTime())
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant())));
         } else {
             String cron = convertCronExpression(rocketChat.getWeek(), rocketChat.getTime());
             scheduledTasks.put(mapKey,
