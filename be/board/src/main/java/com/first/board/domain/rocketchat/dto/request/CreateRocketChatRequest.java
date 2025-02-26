@@ -1,8 +1,10 @@
 package com.first.board.domain.rocketchat.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.entity.ScheduledMessageStatus;
 import com.first.board.domain.rocketchat.entity.WeekType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,7 +20,11 @@ public class CreateRocketChatRequest {
     private Integer memberId;
     private List<WeekType> week;
     private LocalDate date;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
+    @Schema(type = "string", example = "00:00:00")
     private LocalTime time;
+
     private String icon;
     private String message;
     private Boolean isGpt;
