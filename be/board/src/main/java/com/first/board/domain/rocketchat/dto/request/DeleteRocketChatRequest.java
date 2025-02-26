@@ -5,6 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DeleteRocketChatReqest {
+public class DeleteRocketChatRequest {
+    private String xUserId;
     private String rocketChatId;
 }

@@ -4,7 +4,7 @@ import com.first.board.batch.service.TaskManager;
 import com.first.board.domain.rocketchat.adaptor.RocketChatAdaptor;
 import com.first.board.domain.rocketchat.dto.RocketChatDto;
 import com.first.board.domain.rocketchat.dto.request.CreateRocketChatRequest;
-import com.first.board.domain.rocketchat.dto.request.DeleteRocketChatReqest;
+import com.first.board.domain.rocketchat.dto.request.DeleteRocketChatRequest;
 import com.first.board.domain.rocketchat.dto.request.ModifyRocketChatRequest;
 import com.first.board.domain.rocketchat.dto.response.GetNumberTodayResponse;
 import com.first.board.domain.rocketchat.dto.response.GetRocketChatsResponse;
@@ -55,7 +55,7 @@ public class RocketChatService {
         taskManager.addTask(rocketChat);
     }
 
-    public void deleteRocketChat(DeleteRocketChatReqest deleteRocketChatRequest) {
+    public void deleteRocketChat(DeleteRocketChatRequest deleteRocketChatRequest) {
         RocketChat rocketChat = rocketChatAdaptor.findById(deleteRocketChatRequest.getRocketChatId()); // valid 확인
         taskManager.removeTask(rocketChat);
         rocketChatRepository.deleteById(deleteRocketChatRequest.getRocketChatId());

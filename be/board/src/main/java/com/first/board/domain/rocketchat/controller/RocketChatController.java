@@ -1,7 +1,7 @@
 package com.first.board.domain.rocketchat.controller;
 
 import com.first.board.domain.rocketchat.dto.request.CreateRocketChatRequest;
-import com.first.board.domain.rocketchat.dto.request.DeleteRocketChatReqest;
+import com.first.board.domain.rocketchat.dto.request.DeleteRocketChatRequest;
 import com.first.board.domain.rocketchat.dto.request.ModifyRocketChatRequest;
 import com.first.board.domain.rocketchat.dto.response.GetRocketChatsResponse;
 import com.first.board.domain.rocketchat.service.RocketChatService;
@@ -44,7 +44,7 @@ public class RocketChatController {
     @Tag(name = "rocket-chat")
     @Operation(summary = "유저 알람 삭제", description = "유저의 알람을 삭제합니다.")
     @DeleteMapping
-    public ResponseEntity<?> deleteRocketChat(@RequestBody DeleteRocketChatReqest deleteRocketChatRequest) {
+    public ResponseEntity<?> deleteRocketChat(@RequestBody DeleteRocketChatRequest deleteRocketChatRequest) {
         rocketChatService.deleteRocketChat(deleteRocketChatRequest);
         return ResponseEntity.ok().build();
     }
