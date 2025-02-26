@@ -58,4 +58,8 @@ public class RocketChatService {
     public StringBuilder allGetRocketChat() {
         return taskManager.getAllTask();
     }
+
+    public Integer checkNumberTodayRocketChat(String XUserId) {
+        return taskManager.checkNumberTodayRocketChat(XUserId);
+    }
 }

@@ -41,7 +41,7 @@ public class TaskManager {
     private final RocketChatAPI rocketChatAPI;
     private final RocketChatRepository rocketChatRepository;
 
-    private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
+    private final Map<String, Map<String, ScheduledFuture<?>>> scheduledTasks = new HashMap<>();
 
     @EventListener(ApplicationReadyEvent.class)
     public void initScheduleMessage() {
@@ -56,10 +56,14 @@ public class TaskManager {
     }
 
     public void addTask(RocketChat rocketChat) {
-        String mapKey = rocketChat.getIdtoString();
+        if (!scheduledTasks.containsKey(rocketChat.getXUserId())) {
+            scheduledTasks.put(rocketChat.getXUserId(), new HashMap<>());
+        }
+
+        Map<String, ScheduledFuture<?>> myScheduledTasks = scheduledTasks.get(rocketChat.getXUserId());
 
         if (rocketChat.getWeek().isEmpty()) {
-            scheduledTasks.put(mapKey,
+            myScheduledTasks.put(rocketChat.getIdtoString(),
                     taskScheduler.schedule(scheduledSend(rocketChat),
                             Instant.from(LocalDateTime
                                     .of(rocketChat.getDate(), rocketChat.getTime())
@@ -67,16 +71,17 @@ public class TaskManager {
                                     .toInstant())));
         } else {
             String cron = convertCronExpression(rocketChat.getWeek(), rocketChat.getTime());
-            scheduledTasks.put(mapKey,
+            myScheduledTasks.put(rocketChat.getIdtoString(),
                     taskScheduler.schedule(scheduledSend(rocketChat),
                             new CronTrigger(cron, TimeZone.getTimeZone(TimeZone.getDefault().getID()))));
         }
     }
 
     public void removeTask(RocketChat rocketChat) {
-        String mapKey = rocketChat.getIdtoString();
-        scheduledTasks.get(mapKey).cancel(true);
-        scheduledTasks.remove(mapKey);
+        Map<String, ScheduledFuture<?>> myScheduledTasks = scheduledTasks.get(rocketChat.getXUserId());
+
+        myScheduledTasks.get(rocketChat.getIdtoString()).cancel(true);
+        myScheduledTasks.remove(rocketChat.getIdtoString());
     }
 
     private Runnable scheduledSend(RocketChat rocketChat) {
@@ -150,8 +155,14 @@ public class TaskManager {
         StringBuilder sb = new StringBuilder();
         AtomicInteger i = new AtomicInteger(1);
         scheduledTasks.forEach((key, value) -> {
-            sb.append(i.getAndIncrement()).append(": ").append(value.getDelay(TimeUnit.MINUTES)).append("분 후 시작\n");
+            value.forEach((key2, value2) -> {
+                sb.append(i.getAndIncrement()).append(": ").append(value2.getDelay(TimeUnit.MINUTES)).append("분 후 시작\n");
+            });
         });
         return sb;
+    }
+
+    public Integer checkNumberTodayRocketChat(String xUserId) {
+        return scheduledTasks.get(xUserId).size();
     }
 }

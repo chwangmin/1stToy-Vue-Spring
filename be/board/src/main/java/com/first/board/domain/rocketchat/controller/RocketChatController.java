@@ -55,4 +55,11 @@ public class RocketChatController {
     public ResponseEntity<?> allGetRocketChat() {
         return ResponseEntity.ok(rocketChatService.allGetRocketChat());
     }
+
+    @Tag(name = "rocket-chat")
+    @Operation(summary = "알림 메시지 개수", description = "해당 유저의 오늘의 남은 알림 메시지 개수를 출력한다.")
+    @GetMapping("/today")
+    public ResponseEntity<?> checkNumberTodayRocketChat(@RequestParam String XUserId) {
+        return ResponseEntity.ok(rocketChatService.checkNumberTodayRocketChat(XUserId));
+    }
 }
