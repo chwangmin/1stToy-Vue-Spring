@@ -81,7 +81,7 @@ public class TaskManager {
     public void removeTask(RocketChat rocketChat) {
         Map<String, ScheduledFuture<?>> myScheduledTasks = scheduledTasks.get(rocketChat.getXUserId());
 
-        if (myScheduledTasks == null || myScheduledTasks.isEmpty()) {
+        if (myScheduledTasks == null || myScheduledTasks.isEmpty() || !myScheduledTasks.containsKey(rocketChat.getIdtoString())) {
             return;
         }
 
@@ -92,7 +92,7 @@ public class TaskManager {
     private Runnable scheduledSend(RocketChat rocketChat) {
         return () -> {
             if (rocketChat.getIsGpt()) {
-                rocketChat.setMessage(perplexityAPIService.sendPrompt(rocketChat.getMessage()).getContent());
+                rocketChat.setMessage(perplexityAPIService.sendPrompt(rocketChat.getMessage()).getContentWithCitationLinks());
             }
 
             rocketChatAPIService.sendScheduledMessage(rocketChat);

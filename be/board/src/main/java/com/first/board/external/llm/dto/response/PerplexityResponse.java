@@ -1,13 +1,11 @@
 package com.first.board.external.llm.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 @Setter
@@ -60,11 +58,32 @@ public class PerplexityResponse {
         private String content;
     }
 
-    // 편의 메서드: 응답 내용만 추출
-    public String getContent() {
+    // 편의 메서드: 응답 내용에 인용 링크 추가
+    public String getContentWithCitationLinks() {
         if (choices != null && !choices.isEmpty() && choices.get(0).getMessage() != null) {
-            return choices.get(0).getMessage().getContent();
+            String message = choices.get(0).getMessage().getContent();
+
+            // 인용 번호 패턴 찾기 (예: [1], [2] 등)
+            Pattern pattern = Pattern.compile("\\[(\\d+)\\]");
+            Matcher matcher = pattern.matcher(message);
+
+            StringBuffer result = new StringBuffer();
+
+            // 각 인용 번호를 찾아 링크로 변환
+            while (matcher.find()) {
+                int citationIndex = Integer.parseInt(matcher.group(1)) - 1;
+                if (citationIndex >= 0 && citationIndex < citations.size()) {
+                    String url = citations.get(citationIndex);
+                    // [1] 형태를 [[1]](url) 형태로 변환
+                    String replacement = "[[" + matcher.group(1) + "]](" + url + ")";
+                    matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+                }
+            }
+            matcher.appendTail(result);
+
+            return result.toString();
         }
         return null;
     }
+
 }
