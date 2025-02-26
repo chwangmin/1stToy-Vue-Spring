@@ -41,5 +41,4 @@ public class ModifyRocketChatRequest {
                 .status(this.status)
                 .build();
     }
-
 }

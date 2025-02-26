@@ -33,7 +33,7 @@ public class RocketChatRepository {
     }
 
     public List<RocketChat> findByXUserId(String XUserId) {
-        Bson filter = Filters.eq("XUserId", XUserId);
+        Bson filter = Filters.eq("xUserId", XUserId);
 
         return getCollection().find(filter).into(new ArrayList<RocketChat>());
     }
