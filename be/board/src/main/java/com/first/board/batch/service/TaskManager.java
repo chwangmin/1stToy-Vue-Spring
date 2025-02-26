@@ -4,6 +4,7 @@ import com.first.board.domain.rocketchat.adaptor.RocketChatAdaptor;
 import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.entity.ScheduledMessageStatus;
 import com.first.board.domain.rocketchat.entity.WeekType;
+import com.first.board.domain.rocketchat.repository.RocketChatRepository;
 import com.first.board.external.rocketchat.dto.Attachment;
 import com.first.board.external.rocketchat.dto.Message;
 import com.first.board.external.rocketchat.dto.request.RocketChatMessageRequest;
@@ -38,6 +39,7 @@ public class TaskManager {
     private final TaskScheduler taskScheduler;
     private final RocketChatAdaptor rocketChatAdaptor;
     private final RocketChatAPI rocketChatAPI;
+    private final RocketChatRepository rocketChatRepository;
 
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
 
@@ -98,6 +100,12 @@ public class TaskManager {
                     .build();
 
             rocketChatAPI.sendScheduledMessage(chatMessage, rocketChat.getXAuthToken(), rocketChat.getXUserId());
+
+            if (rocketChat.getWeek().isEmpty()) {
+                rocketChat.setStatus(ScheduledMessageStatus.COMPLETED);
+                rocketChatRepository.updateStatus(rocketChat);
+                removeTask(rocketChat);
+            }
         };
     }
 

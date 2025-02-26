@@ -82,4 +82,14 @@ public class RocketChatRepository {
 
         return getCollection().find(filter).into(new ArrayList<RocketChat>());
     }
+
+    public void updateStatus(RocketChat rocketChat) {
+        Bson filter = Filters.eq("_id", rocketChat.getId());
+
+        Bson updates = Updates.combine(
+                Updates.set("status", rocketChat.getStatus())
+        );
+
+        getCollection().updateOne(filter, updates);
+    }
 }
