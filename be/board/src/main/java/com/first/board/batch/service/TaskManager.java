@@ -163,6 +163,9 @@ public class TaskManager {
     }
 
     public Integer checkNumberTodayRocketChat(String xUserId) {
-        return scheduledTasks.get(xUserId).size();
+        if (scheduledTasks.containsKey(xUserId)) {
+            return scheduledTasks.get(xUserId).size();
+        }
+        return 0;
     }
 }
