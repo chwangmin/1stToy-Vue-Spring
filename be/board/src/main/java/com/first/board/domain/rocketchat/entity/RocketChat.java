@@ -63,10 +63,14 @@ public class RocketChat {
     @NonNull
     private String roomId;
 
+    @BsonProperty("roomTitle")
+    @NonNull
+    private String roomTitle;
+
     @Builder
     public RocketChat(Integer memberId, List<WeekType> week, LocalDate date,
                       LocalTime time, String icon, String message,
-                      Boolean isGpt, String XAuthToken, String XUserId, ScheduledMessageStatus status, String roomId) {
+                      Boolean isGpt, String XAuthToken, String XUserId, ScheduledMessageStatus status, String roomId, String roomTitle) {
         this.id = new ObjectId();
         this.memberId = memberId;
         this.week = week;
@@ -80,6 +84,7 @@ public class RocketChat {
         this.isConnectable = true;
         this.status = status;
         this.roomId = roomId;
+        this.roomTitle = roomTitle;
     }
 
     public String getIdtoString() {

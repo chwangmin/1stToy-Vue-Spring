@@ -31,6 +31,7 @@ public class CreateRocketChatRequest {
     private String XAuthToken;
     private String XUserId;
     private String roomId;
+    private String roomTitle;
 
     public RocketChat toEntity() {
         return RocketChat.builder()
@@ -45,6 +46,7 @@ public class CreateRocketChatRequest {
                 .XUserId(this.XUserId)
                 .status(ScheduledMessageStatus.PENDING)
                 .roomId(this.roomId)
+                .roomTitle(this.roomTitle)
                 .build();
     }
 

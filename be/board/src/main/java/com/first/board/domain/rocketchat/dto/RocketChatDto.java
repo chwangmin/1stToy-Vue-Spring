@@ -17,7 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 public class RocketChatDto {
     private String id;
-    private Integer sqlId;
     private Integer memberId;
     private List<WeekType> week;
     private LocalDate date;
@@ -30,14 +29,14 @@ public class RocketChatDto {
     private Boolean isConnectable;
     private ScheduledMessageStatus status;
     private String roomId;
+    private String roomTitle;
 
     @Builder
-    public RocketChatDto(String id, Integer sqlId, Integer memberId, List<WeekType> week,
+    public RocketChatDto(String id, Integer memberId, List<WeekType> week,
                          LocalDate date, LocalTime time, String icon,
                          String message, Boolean isGpt, String XAuthToken,
-                         String XUserId, Boolean isConnectable, ScheduledMessageStatus status, String roomId) {
+                         String XUserId, Boolean isConnectable, ScheduledMessageStatus status, String roomId, String roomTitle) {
         this.id = id;
-        this.sqlId = sqlId;
         this.memberId = memberId;
         this.week = week;
         this.date = date;
@@ -50,6 +49,7 @@ public class RocketChatDto {
         this.isConnectable = isConnectable;
         this.status = status;
         this.roomId = roomId;
+        this.roomTitle = roomTitle;
     }
 
     public static RocketChatDto from(RocketChat rocketChat) {
@@ -67,6 +67,7 @@ public class RocketChatDto {
                 .isConnectable(rocketChat.getIsConnectable())
                 .status(rocketChat.getStatus())
                 .roomId(rocketChat.getRoomId())
+                .roomTitle(rocketChat.getRoomTitle())
                 .build();
     }
 
