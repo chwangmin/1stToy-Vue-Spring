@@ -98,4 +98,10 @@ public class RocketChatRepository {
 
         getCollection().updateOne(filter, updates);
     }
+
+    public long findCountByXUserId(String XUserId) {
+        Bson filter = Filters.eq("xUserId", XUserId);
+
+        return getCollection().countDocuments(filter);
+    }
 }

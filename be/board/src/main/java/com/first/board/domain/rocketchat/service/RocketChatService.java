@@ -10,6 +10,8 @@ import com.first.board.domain.rocketchat.dto.response.GetNumberTodayResponse;
 import com.first.board.domain.rocketchat.dto.response.GetRocketChatsResponse;
 import com.first.board.domain.rocketchat.entity.RocketChat;
 import com.first.board.domain.rocketchat.repository.RocketChatRepository;
+import com.first.board.global.error.ErrorCode;
+import com.first.board.global.error.exception.BusinessException;
 import com.first.board.global.mongodb.MongoUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,10 @@ public class RocketChatService {
     private final MongoUtil mongoUtil;
 
     public void createRocketChat(CreateRocketChatRequest createRocketChatRequest) {
+        if (rocketChatRepository.findCountByXUserId(createRocketChatRequest.getXUserId()) >= 50) {
+            throw new BusinessException(ErrorCode.ROCKET_CHAT_CANNOT_CREATE_OVER_MAX);
+        }
+
         RocketChat rocketChat = createRocketChatRequest.toEntity();
         rocketChat = rocketChatRepository.save(rocketChat);
         taskManager.addTask(rocketChat);

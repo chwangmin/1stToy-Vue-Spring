@@ -53,6 +53,7 @@ public enum ErrorCode {
 
     // rocketchat
     ROCKET_CHAT_NOT_FOUND(HttpStatus.BAD_GATEWAY, "R-001", "해당 rocket chat은 존재하지 않습니다."),
+    ROCKET_CHAT_CANNOT_CREATE_OVER_MAX(HttpStatus.BAD_GATEWAY, "R-002", "알림예약은 최대 50개 입니다."),
 
     // cron 형식
     CRON_HAVE_TO_TIME(HttpStatus.BAD_GATEWAY, "CR-001", "cron 표현식에 Time이 필요합니다.")
