@@ -63,7 +63,7 @@ public class RocketChatRepository {
                 Updates.set("isGpt", modifyRocketChatRequest.getIsGpt()),
                 Updates.set("XAuthToken", modifyRocketChatRequest.getXAuthToken()),
                 Updates.set("XUserId", modifyRocketChatRequest.getXUserId()),
-                Updates.set("status", modifyRocketChatRequest.getStatus())
+                Updates.set("status", ScheduledMessageStatus.PENDING)
         );
 
         getCollection().updateOne(filter, updates);
