@@ -9,7 +9,7 @@ services:
     depends_on:
       - choi7907-mongodb
     volumes:
-      - spring_static_files:/src/main/resources/static/files
+      - ./static/files:/src/main/resources/static/files
     networks:
       - npm-network
 
@@ -44,7 +44,6 @@ services:
 
 volumes:
   mongodb_data:
-  spring_static_files:
 
 networks:
   npm-network:
