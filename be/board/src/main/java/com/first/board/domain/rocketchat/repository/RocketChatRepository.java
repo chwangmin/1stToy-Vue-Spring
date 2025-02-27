@@ -7,6 +7,7 @@ import com.first.board.global.mongodb.MongoUtil;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import lombok.RequiredArgsConstructor;
 import org.bson.conversions.Bson;
@@ -35,7 +36,12 @@ public class RocketChatRepository {
     public List<RocketChat> findByXUserId(String XUserId) {
         Bson filter = Filters.eq("xUserId", XUserId);
 
-        return getCollection().find(filter).into(new ArrayList<RocketChat>());
+        Bson sort = Sorts.orderBy(
+                Sorts.descending("status", "PENDING"),
+                Sorts.ascending("status")
+        );
+
+        return getCollection().find(filter).sort(sort).into(new ArrayList<RocketChat>());
     }
 
     public RocketChat save(RocketChat rocketChat) {
