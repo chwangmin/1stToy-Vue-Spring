@@ -28,6 +28,9 @@ spring:
     roomid: ${ROCKET_CHAT_ROOM_ID}
   main:
     allow-bean-definition-overriding: true
+  perplexity:
+    api:
+      token: ${PERPLEXITY_API_KEY}
 server:
   port: 8021
 logging:

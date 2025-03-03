@@ -131,7 +131,11 @@ public class BoardController {
     public ResponseEntity<Resource> fileDownloadBoard(@PathVariable String filePath) throws MalformedURLException {
         Resource resource = boardService.fileDownloadBoard(filePath);
 
-        String fileName = filePath.split("_", 2)[1];
+        String fileName = filePath;
+
+        if (filePath.contains("_")) {
+            fileName = filePath.split("_", 2)[1];
+        }
 
         String contentDisposition = "attachment; filename=\"" + UriUtils.encode(fileName, "UTF-8") + "\"";
 

@@ -22,7 +22,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class WebSecurityConfiguration implements WebMvcConfigurer {
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberService memberService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService) throws Exception {
